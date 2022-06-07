@@ -1,0 +1,13 @@
+# Default ignored files
+.idea
+*.iml
+*.fpr
+*.pdf
+*.zip
+.fod/
+.fortify/
+target/
+.classpath
+.project
+.settings/
+.env
