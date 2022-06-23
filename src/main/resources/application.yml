@@ -11,10 +11,6 @@ server:
     context-path: /
 
 spring:
-  h2:
-    console.enabled: true
-    console.path: /h2-console
-    console.settings.trace: false 
   profiles:
     active: prod
   main:
