@@ -1,7 +1,7 @@
 /*
         Insecure Web App (IWA)
 
-        Copyright (C) 2020 Micro Focus or one of its affiliates
+        Copyright (C) 2020-2022 Micro Focus or one of its affiliates
 
         This program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -90,22 +90,22 @@ public class ProductService {
     }
 
     public List<Product> getAllProducts() {
-        return productRepository.findAll();
+        return productRepository.findAll(1, productRepository.count());
     }
 
     public List<Product> getAllProducts(Integer offset, String keywords) {
         if (keywords != null && !keywords.isEmpty()) {
-            return productRepository.findProductsByKeywords(keywords, offset, pageSize);
+            return productRepository.findByKeywords(keywords, offset, pageSize);
         } else {
-            return productRepository.listProducts(offset, pageSize);
+            return productRepository.findAll(offset, pageSize);
         }
     }
 
     public List<Product> getAllActiveProducts(Integer offset, String keywords) {
         if (keywords != null && !keywords.isEmpty()) {
-            return productRepository.findAvailableProductsByKeywords(keywords, offset, pageSize);
+            return productRepository.findAvailableByKeywords(keywords, offset, pageSize);
         }
-        return productRepository.listAvailableProducts(offset, pageSize);
+        return productRepository.findAvailable(offset, pageSize);
     }
 
     public long count() {
@@ -169,26 +169,26 @@ public class ProductService {
             ptmp.setTimeToStock(adminProductForm.getTimeToStock());
             ptmp.setRating(adminProductForm.getRating());
             ptmp.setAvailable(adminProductForm.getAvailable());
-            return ptmp;
+            return productRepository.save(ptmp);
         } else {
             throw new ProductNotFoundException("Product not found: " + adminProductForm.getCode());
         }
     }
 
-    public Product newProductFormAdminNewProductForm(AdminNewProductForm adminNewProductForm) {
+    public Product newProductFormAdminNewProductForm(AdminNewProductForm productForm) {
         Product ptmp = new Product();
-        ptmp.setCode(adminNewProductForm.getCode());
-        ptmp.setName(adminNewProductForm.getName());
-        ptmp.setSummary(adminNewProductForm.getSummary());
-        ptmp.setDescription(adminNewProductForm.getDescription());
-        ptmp.setPrice(adminNewProductForm.getPrice());
-        ptmp.setOnSale(adminNewProductForm.getOnSale());
-        ptmp.setSalePrice(adminNewProductForm.getSalePrice());
-        ptmp.setInStock(adminNewProductForm.getInStock());
-        ptmp.setTimeToStock(adminNewProductForm.getTimeToStock());
-        ptmp.setImage(adminNewProductForm.getImage());
-        ptmp.setAvailable(adminNewProductForm.getAvailable());
-        Product newProduct = productRepository.saveAndFlush(ptmp);
+        ptmp.setCode(productForm.getCode());
+        ptmp.setName(productForm.getName());
+        ptmp.setSummary(productForm.getSummary());
+        ptmp.setDescription(productForm.getDescription());
+        ptmp.setPrice(productForm.getPrice());
+        ptmp.setOnSale(productForm.getOnSale() != null ? productForm.getOnSale() : false);
+        ptmp.setSalePrice(productForm.getSalePrice());
+        ptmp.setInStock(productForm.getInStock() != null ? productForm.getInStock() : false);
+        ptmp.setTimeToStock(productForm.getTimeToStock());
+        ptmp.setImage(productForm.getImage());
+        ptmp.setAvailable(productForm.getAvailable() != null ? productForm.getAvailable() : false);
+        Product newProduct = productRepository.save(ptmp);
         return newProduct;
     }
 
