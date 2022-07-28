@@ -95,7 +95,7 @@ public class ProductService {
 
     public List<Product> getAllProducts(Integer offset, String keywords) {
         if (keywords != null && !keywords.isEmpty()) {
-            return productRepository.findByKeywords(keywords, offset, pageSize);
+            return productRepository.findByKeywordsFromProductName(keywords);
         } else {
             return productRepository.findAll(offset, pageSize);
         }
@@ -103,7 +103,7 @@ public class ProductService {
 
     public List<Product> getAllActiveProducts(Integer offset, String keywords) {
         if (keywords != null && !keywords.isEmpty()) {
-            return productRepository.findAvailableByKeywords(keywords, offset, pageSize);
+            return productRepository.findAvailableByKeywordsFromProductName(keywords);
         }
         return productRepository.findAvailable(offset, pageSize);
     }
