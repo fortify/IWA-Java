@@ -38,6 +38,7 @@ import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -78,6 +79,15 @@ public class ProductController extends AbstractBaseController {
     @Override
     String GetControllerName() {
         return CONTROLLER_NAME;
+    }
+    
+    @GetMapping("/xss")
+    @ResponseBody
+    public ResponseEntity<String> getKeywordsContent(@Param("keywords") String keywords) {
+
+    	String retContent = "Product search using: " + keywords;
+    	
+        return ResponseEntity.ok().body(retContent);
     }
 
     @GetMapping(value = {"", "/"})

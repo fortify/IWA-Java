@@ -24,7 +24,8 @@
                 <div th:if="${not #strings.isEmpty(keywords)}" class="row pt-2">
                     <div class="col-md-12 text-center">
                         <h2>Searching for:
-                            <span class="bg-light text-dark"><span th:utext="${keywords}"/></span>
+                            <!-- <span class="bg-light text-dark"><span th:utext="${keywords}"/></span> -->
+                            <span class="bg-light text-dark"><span id="lblKeywords"/></span>
                         </h2>
                     </div>
                 </div>
@@ -155,5 +156,27 @@
         <div th:replace="fragments/secondary-bg.html :: secondaryBackground ('/index.html')"></div>
 
     </div>
+    <th:block layout:fragment="script">
+        <script type="text/javascript" th:inline="javascript">
+        $(document).ready(function () {
+        	  $("#search").submit(function (event) {
+        		  var keywrds =  document.getElementById("keywords").value;
+        		  if (keywrds != null && keywrds.length > 3) {
+        			  $.ajax({
+        				  url: "/products/xss?keywords="+keywrds,
+        	              success: function(data){ 
+        	                  if (data != null && data.length > 0) {
+        		            		document.getElementById("lblKeywords").innerHTML = data;
+        	                  }
+        	              },
+        	              error: function(){
+        	                  alert("There was an error.");
+        	              }
+        	          });        			  
+        		  }
+        	  });
+        });        
+        </script>
+    </th:block>
 </body>
 </html>
