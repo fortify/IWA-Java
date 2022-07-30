@@ -4,7 +4,7 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security" xmlns="http://www.w3.org/1999/html"
       layout:decorate="~{fragments/layout}">
 <head>
-    <title>Products</title>
+    <title>Products :: First-Aid</title>
 </head>
 <body>
     <div layout:fragment="content" th:remove="tag">
@@ -18,20 +18,10 @@
         </div>
 
         <div class="site-section-sm">
-
-            <div class="container">
-
-                <div th:if="${not #strings.isEmpty(keywords)}" class="row pt-2">
-                    <div class="col-md-12 text-center">
-                        <h2>Searching for:
-                            <span class="bg-light text-dark"><span th:utext="${keywords}"/></span>
-                        </h2>
-                    </div>
-                </div>
-
+        	<div class="container">
                 <!-- search box -->
                 <div class="row d-flex justify-content-center">
-                    <form id="search" class="col-md-10" th:action="@{/products}" method="GET">
+                    <form id="search" class="col-md-10" th:action="@{/products/xss}" method="GET">
                         <div class="card p-3 py-4">
                             <div class="row g-3 mt-2">
                                 <div class="input-group">
