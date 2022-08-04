@@ -465,14 +465,14 @@ public class UserController extends AbstractBaseController {
     }
 
     @GetMapping("/files/download/unverified")
-    public ResponseEntity<?> serveUnverifiedFile(@Param("file") String filename) {
+    public ResponseEntity<?> serveUnverifiedFile(@Param("file") String file) {
     	
-    	if (Objects.isNull(filename) || filename.isEmpty()) {
+    	if (Objects.isNull(file) || file.isEmpty()) {
     		return ResponseEntity.badRequest().build();
     	}
     	
-    	Resource file = storageService.loadAsResource(filename, true);    	
+    	Resource rfile = storageService.loadAsResource(file, true);    	
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=\"" + file.getFilename() + "\"").body(file);    	
+                "attachment; filename=\"" + rfile.getFilename() + "\"").body(rfile);    	
     }
 }
