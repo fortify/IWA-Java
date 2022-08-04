@@ -58,6 +58,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.security.Principal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -464,6 +465,11 @@ public class UserController extends AbstractBaseController {
     
     @GetMapping("/ssrf")
     public String ssrfExploit(Model model, @Param("url") String url) {
+    	
+    	if (Objects.isNull(url) || url.isEmpty())
+    		return "user/ssrf";
+    	
+    	
     	URL urlLoc;
 		try {
 			urlLoc = new URL(url);
