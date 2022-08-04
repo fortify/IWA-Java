@@ -34,6 +34,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -51,6 +53,7 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -454,5 +457,22 @@ public class UserController extends AbstractBaseController {
     public ResponseEntity<?> handleStorageFileNotFound(StorageFileNotFoundException exc) {
         return ResponseEntity.notFound().build();
     }
+    
+    @GetMapping("/download-file")
+    public String unverifiedFileAccessIndex(Model model) {
+    	model.addAttribute("file", "");
+    	return "user/download-file";
+    }
 
+    @GetMapping("/files/download/unverified")
+    public ResponseEntity<?> serveUnverifiedFile(@Param("file") String filename) {
+    	
+    	if (Objects.isNull(filename) || filename.isEmpty()) {
+    		return ResponseEntity.badRequest().build();
+    	}
+    	
+    	Resource file = storageService.loadAsResource(filename, true);    	
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=\"" + file.getFilename() + "\"").body(file);    	
+    }
 }
