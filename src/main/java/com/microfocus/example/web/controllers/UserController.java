@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -48,7 +49,13 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
@@ -453,6 +460,24 @@ public class UserController extends AbstractBaseController {
     @ExceptionHandler(StorageFileNotFoundException.class)
     public ResponseEntity<?> handleStorageFileNotFound(StorageFileNotFoundException exc) {
         return ResponseEntity.notFound().build();
+    }
+    
+    @GetMapping("/ssrf")
+    public String ssrfExploit(Model model, @Param("url") String url) {
+    	URL urlLoc;
+		try {
+			urlLoc = new URL(url);
+	        URLConnection connection = urlLoc.openConnection();
+	        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {		        	
+		        String body = reader.lines().collect(Collectors.joining());
+		        model.addAttribute("urlcontent", body);
+		        model.addAttribute("url", url);
+	        }
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        return "user/ssrf";
     }
 
 }
