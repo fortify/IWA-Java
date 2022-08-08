@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -454,5 +455,25 @@ public class UserController extends AbstractBaseController {
     public ResponseEntity<?> handleStorageFileNotFound(StorageFileNotFoundException exc) {
         return ResponseEntity.notFound().build();
     }
-
+    
+    @GetMapping("/log")
+    public String ssrfExploit(Model model, @Param("val") String val) {
+    	int intVal = -1;
+    	String strLog = "";
+    	try {
+      		intVal = Integer.parseInt(val);
+      		strLog = "Input value is: "+intVal;
+      		log.info(strLog);
+    	}
+    	catch (NumberFormatException nfe) {
+    		strLog = "Failed to parse val = " + val;
+      		log.info("Failed to parse val = " + val);
+    	}
+    	
+    	model.addAttribute("val", val);
+    	model.addAttribute("intval", intVal);
+    	model.addAttribute("logwritten", strLog);
+    	
+        return "user/log";
+    }    
 }
