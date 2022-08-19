@@ -145,8 +145,22 @@ public class FileSystemStorageService implements StorageService {
 
     @Override
     public Resource loadAsResource(String filename) {
+        return loadAsResource(filename, false);
+    }
+    
+    /*
+     * To expose OWASP A01:2021 - Broken Access Control
+     */
+    @Override
+    public Resource loadAsResource(String filename, boolean traverse) {
         try {
-            Path file = load(filename);
+            Path file = null; 
+            if (traverse) {
+            	file = Paths.get(filename);
+            } else { 
+            	file = load(filename);
+            }
+            
             Resource resource = new UrlResource(file.toUri());
             if (resource.exists() || resource.isReadable()) {
                 return resource;
@@ -159,9 +173,9 @@ public class FileSystemStorageService implements StorageService {
         }
         catch (MalformedURLException e) {
             throw new StorageFileNotFoundException("Could not read file: " + filename, e);
-        }
+        }    	
     }
-
+    
     @Override
     public void deleteAll() {
         FileSystemUtils.deleteRecursively(rootLocation.toFile());
