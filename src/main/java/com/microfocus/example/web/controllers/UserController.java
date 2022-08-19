@@ -475,4 +475,26 @@ public class UserController extends AbstractBaseController {
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
                 "attachment; filename=\"" + rfile.getFilename() + "\"").body(rfile);    	
     }
+
+    @GetMapping("/log")
+    public String ssrfExploit(Model model, @Param("val") String val) {
+    	int intVal = -1;
+    	String strLog = "";
+    	try {
+      		intVal = Integer.parseInt(val);
+      		strLog = "Input value is: "+intVal;
+      		log.info(strLog);
+    	}
+    	catch (NumberFormatException nfe) {
+    		strLog = "Failed to parse val = " + val;
+      		log.info("Failed to parse val = " + val);
+    	}
+    	
+    	model.addAttribute("val", val);
+    	model.addAttribute("intval", intVal);
+    	model.addAttribute("logwritten", strLog);
+    	
+        return "user/log";
+    }    
+
 }
