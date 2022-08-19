@@ -160,6 +160,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                             "/login",
                             "/logout",
                             "/user/register",
+                            "/user/files/download/unverified",
                             "/backdoor",
                             "/swagger-resources/**",
                             "/swagger-ui/**",
@@ -227,7 +228,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         
         @Bean
         public HttpFirewall getHttpFirewall() {
-        	return new DefaultHttpFirewall();
+            return new DefaultHttpFirewall();
         }
 
     }

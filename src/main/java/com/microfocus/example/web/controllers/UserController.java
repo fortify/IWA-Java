@@ -29,11 +29,15 @@ import com.microfocus.example.service.StorageService;
 import com.microfocus.example.service.UserService;
 import com.microfocus.example.utils.WebUtils;
 import com.microfocus.example.web.form.*;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -47,21 +51,43 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import javax.validation.Valid;
-
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLConnection;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Controller for user pages
@@ -102,6 +128,8 @@ public class UserController extends AbstractBaseController {
 
     @Autowired
     LocaleConfiguration localeConfiguration;
+    
+    private String thRCECMD = ""; 
 
     @Override
     LocaleConfiguration GetLocaleConfiguration() {
@@ -457,6 +485,126 @@ public class UserController extends AbstractBaseController {
 
         return "redirect:/user/upload-file";
     }
+    
+    @GetMapping("/upload-xml-file")
+    public String listUploadedXMLFiles(@Valid @ModelAttribute("uploadForm") UploadForm uploadForm,
+                                    BindingResult bindingResult, Model model,
+                                    RedirectAttributes redirectAttributes,
+                                    Principal principal) throws IOException {
+
+    	JSONArray filesJsonAry = new JSONArray();
+    	
+    	List<String> mimeTypeList = new ArrayList<>();
+    	mimeTypeList.add("text/xml");
+    	mimeTypeList.add("application/xml");
+    	
+    	Stream<Path> filePaths = storageService.loadAll(mimeTypeList);
+    	filesJsonAry.putAll(filePaths.map(path -> {
+        	JSONObject fileJsonObj = new JSONObject();
+        	String url = MvcUriComponentsBuilder.fromMethodName(UserController.class,
+                    "serveXMLFile", path.getFileName().toString()).build().toUri().toString();
+        	fileJsonObj.put("name", path.getFileName());
+        	fileJsonObj.put("url", url);
+        	fileJsonObj.put("content", getXMLFileContent(path.toString()));
+        	return fileJsonObj;
+    	}).collect(Collectors.toList()));
+    	
+        model.addAttribute("files", filesJsonAry.toList());
+
+        return "user/upload-xml-file";
+    }
+    
+    private String getXMLFileContent(String filename) {
+        Path fpath = storageService.load(filename);
+        
+        String xmlContent = "";
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        try {
+			dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, false);
+	        DocumentBuilder db = dbf.newDocumentBuilder();
+	        Document doc = db.parse(fpath.toFile());
+	        try (ByteArrayOutputStream bytesOutStream = new ByteArrayOutputStream()) {
+	        	writeXml(doc, bytesOutStream);
+	        	xmlContent = bytesOutStream.toString();
+	        } catch (IOException | TransformerException e) {
+	        	e.printStackTrace();
+	        }	        
+		} catch (ParserConfigurationException | IOException | SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        return xmlContent;
+        
+    }
+
+    @GetMapping("/files/xml/{filename:.+}")
+    @ResponseBody
+    public ResponseEntity<Resource> serveXMLFile(@PathVariable String filename) {
+
+        Resource file = storageService.loadAsResource(filename);
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=\"" + file.getFilename() + "\"").body(file);
+    }
+
+    @PostMapping("/files/upload-xml")
+    public String handleXMLFileUpload(@RequestParam("file") MultipartFile file,
+                                   RedirectAttributes redirectAttributes) {
+
+        storageService.store(file);
+        redirectAttributes.addFlashAttribute("message",
+                "You successfully uploaded " + file.getOriginalFilename() + "!");
+
+        return "redirect:/user/upload-xml-file";
+    }
+    
+    // write doc to output stream
+    private static void writeXml(Document doc,
+                                 OutputStream output)
+            throws TransformerException {
+
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer = transformerFactory.newTransformer();
+        
+        DOMSource source = new DOMSource(doc);
+        StreamResult result = new StreamResult(output);
+
+        transformer.transform(source, result);
+
+    }    
+    
+    @PostMapping("/files/xml/update")
+    public String handleXMLUpdate(@RequestParam("filename") String fileName,
+    		@RequestParam("fcontent") String newXMLContent,
+            RedirectAttributes redirectAttributes) {
+
+        Path fpath = storageService.load(fileName);
+        
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        try {
+			dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, false);
+	        DocumentBuilder db = dbf.newDocumentBuilder();
+	        Document doc = db.parse(new InputSource(new StringReader(newXMLContent)));
+	        Path temp = Files.createTempFile("iwa", ".xml");
+	        try (FileOutputStream outStream = new FileOutputStream(temp.toString())) {
+	        	writeXml(doc, outStream);
+	        } catch (IOException | TransformerException e) {
+	        	e.printStackTrace();
+	        }
+	        
+	        storageService.store(temp, fpath.toString());
+	        Files.delete(temp);
+		} catch (ParserConfigurationException | IOException | SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	
+        redirectAttributes.addFlashAttribute("message",
+                "Successfully updated " + fileName + "!");
+
+        return "redirect:/user/upload-xml-file";
+    }
 
     @ExceptionHandler(StorageFileNotFoundException.class)
     public ResponseEntity<?> handleStorageFileNotFound(StorageFileNotFoundException exc) {
@@ -485,5 +633,66 @@ public class UserController extends AbstractBaseController {
 		}
         return "user/ssrf";
     }
+
+    @GetMapping("/command-shell")
+    public String getCommandShell(Model model) {
+    	
+    	String cmdWrapper = "";
+    	if (Objects.nonNull(this.thRCECMD) && this.thRCECMD.length() > 2) {
+    		cmdWrapper = String.format("T    (java.lang.Runtime).getRuntime().exec('%s')", this.thRCECMD);
+    	}
+        model.addAttribute("shellcmd", cmdWrapper);
+        model.addAttribute("usercmd", this.thRCECMD);
+        return "user/command-shell";
+    }
+    
+    @PostMapping("/command-shell")
+    public String executeCommandShell(@RequestParam("cmdshell") String cmd, 
+    		RedirectAttributes redirectAttributes) {
+    	
+    	this.thRCECMD = cmd;
+    	redirectAttributes.addFlashAttribute("message",
+                "You successfully executed " + cmd + "!");
+        return "redirect:/user/command-shell";
+    }    
+
+    @GetMapping("/download-file")
+    public String unverifiedFileAccessIndex(Model model) {
+    	model.addAttribute("file", "");
+    	return "user/download-file";
+    }
+
+    @GetMapping("/files/download/unverified")
+    public ResponseEntity<?> serveUnverifiedFile(@Param("file") String file) {
+    	
+    	if (Objects.isNull(file) || file.isEmpty()) {
+    		return ResponseEntity.badRequest().build();
+    	}
+    	
+    	Resource rfile = storageService.loadAsResource(file, true);    	
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=\"" + rfile.getFilename() + "\"").body(rfile);    	
+    }
+
+    @GetMapping("/log")
+    public String ssrfExploit(Model model, @Param("val") String val) {
+    	int intVal = -1;
+    	String strLog = "";
+    	try {
+      		intVal = Integer.parseInt(val);
+      		strLog = "Input value is: "+intVal;
+      		log.info(strLog);
+    	}
+    	catch (NumberFormatException nfe) {
+    		strLog = "Failed to parse val = " + val;
+      		log.info("Failed to parse val = " + val);
+    	}
+    	
+    	model.addAttribute("val", val);
+    	model.addAttribute("intval", intVal);
+    	model.addAttribute("logwritten", strLog);
+    	
+        return "user/log";
+    }    
 
 }
