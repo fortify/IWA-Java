@@ -65,7 +65,13 @@ public class UrlAuthenticationSuccessHandler implements AuthenticationSuccessHan
         String jwtToken = jwtUtils.generateJwtToken(authentication);
         log.debug("Generated jwtToken: " + jwtToken);
         session.setAttribute("userId", user.getId());
-        session.setAttribute("username", user.getUsername());
+        if (session.getAttribute("username") != null) {
+        	if (request.getParameter("username") != null) {
+        		session.setAttribute("username", request.getParameter("username"));
+        	}
+        } else {
+        	session.setAttribute("username", user.getUsername());
+        }
         session.setAttribute("authorities", authentication.getAuthorities());
         session.setAttribute("jwtToken", jwtToken);
 

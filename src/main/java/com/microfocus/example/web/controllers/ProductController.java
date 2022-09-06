@@ -21,7 +21,10 @@ package com.microfocus.example.web.controllers;
 
 import com.microfocus.example.config.LocaleConfiguration;
 import com.microfocus.example.entity.Product;
+import com.microfocus.example.exception.ServerErrorException;
 import com.microfocus.example.service.ProductService;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,12 +110,16 @@ public class ProductController extends AbstractBaseController {
     public String index(Model model, @Param("keywords") String keywords, @Param("limit") Integer limit, Principal principal) {
         log.debug("Searching for products using keywords: " + ((keywords == null || keywords.isEmpty()) ? "none" : keywords));
         productService.setPageSize((limit == null ? defaultPageSize : limit));
-        List<Product> products = productService.getAllActiveProducts(0, keywords);
-        model.addAttribute("keywords", keywords);
-        model.addAttribute("products", products);
-        model.addAttribute("productCount", products.size());
-        model.addAttribute("productTotal", productService.count());
-        this.setModelDefaults(model, principal, "index");
+        try {
+	        List<Product> products = productService.getAllActiveProducts(0, keywords);
+	        model.addAttribute("keywords", keywords);
+	        model.addAttribute("products", products);
+	        model.addAttribute("productCount", products.size());
+	        model.addAttribute("productTotal", productService.count());
+	        this.setModelDefaults(model, principal, "index");
+        } catch (Exception ex) {
+        	throw new ServerErrorException(ExceptionUtils.getStackTrace(ex));
+        }
         return "products/index";
     }
 

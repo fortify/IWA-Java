@@ -675,7 +675,7 @@ public class UserController extends AbstractBaseController {
     }
 
     @GetMapping("/log")
-    public String ssrfExploit(Model model, @Param("val") String val) {
+    public String writeLog(Model model, @Param("val") String val) {
     	int intVal = -1;
     	String strLog = "";
     	try {

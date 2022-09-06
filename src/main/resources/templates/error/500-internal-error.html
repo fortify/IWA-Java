@@ -17,6 +17,12 @@
                             </span>
                             <h2 class="display-3 text-black">Internal Error</h2>
                             <p class="lead mb-5">We're sorry there has been an internal error!</p>
+                            <div th:if="${exception}" th:class="${'alert ' + alertClass + ' alert-dismissible'}" role="alert">
+                                <span th:text="${exception}">message</span>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
                             <p><a th:href="@{/products}" class="btn btn-md height-auto px-4 py-3 btn-primary">Back to Shop</a></p>
                         </div>
                     </div>
