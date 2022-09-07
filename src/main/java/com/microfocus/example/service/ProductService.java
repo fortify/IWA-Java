@@ -286,6 +286,7 @@ public class ProductService {
         otmp.setUser(orderForm.getUser());
         otmp.setCart(orderForm.getCart());
         otmp.setAmount(orderForm.getAmount());
+        otmp.setNotes((String)orderForm.getNotes());
         otmp.setOrderDate(new Date());
         Random r = new Random();
         int low = 10;
@@ -328,6 +329,7 @@ public class ProductService {
             otmp.setCart(adminOrderForm.getCart());
             otmp.setShipped(adminOrderForm.getShipped());
             otmp.setShippedDate(adminOrderForm.getShippedDate());
+            otmp.setNotes((String)adminOrderForm.getNotes());
             return otmp;
         } else {
             throw new ProductNotFoundException("Order not found: " + adminOrderForm.getOrderNum());
@@ -360,6 +362,7 @@ public class ProductService {
         }
         otmp.setShipped(order.getShipped());
         otmp.setShippedDate(order.getShippedDate());
+        otmp.setNotes((String)order.getNotes());
         return orderRepository.save(otmp);
     }
 

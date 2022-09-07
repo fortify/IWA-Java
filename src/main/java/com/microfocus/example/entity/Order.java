@@ -67,7 +67,7 @@ public class Order implements Serializable {
     private float amount;
 
     private String cart;
-
+    
     @NotNull
     private Boolean shipped;
 
@@ -76,13 +76,16 @@ public class Order implements Serializable {
     @Column(name = "shipped_date")
     private Date shippedDate;
 
+    @Column(name = "order_notes")
+    private String notes;    
+    
     public Order() {
         this.shipped = false;
         Calendar calendar = Calendar.getInstance();
         this.orderDate = calendar.getTime();
     }
 
-    public Order(UUID id, User user, Date orderDate, String orderNum, float amount, String cart, boolean shipped) {
+    public Order(UUID id, User user, Date orderDate, String orderNum, float amount, String cart, boolean shipped, String notes) {
         this.id = id;
         this.user = user;
         this.orderDate = orderDate;
@@ -90,6 +93,7 @@ public class Order implements Serializable {
         this.amount = amount;
         this.cart = cart;
         this.shipped = shipped;
+        this.setNotes(notes);
     }
 
     public UUID getId() {
@@ -156,7 +160,15 @@ public class Order implements Serializable {
         this.shippedDate = shippedDate;
     }
 
-    @Override
+    public String getNotes() {
+		return notes;
+	}
+
+	public void setNotes(String notes) {
+		this.notes = notes;
+	}
+
+	@Override
     public String toString() {
         return "Order(" + id + " : " + orderNum + " for: " + user.getUsername() + " amount : " + amount + ")";
     }

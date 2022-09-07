@@ -91,6 +91,7 @@ create table orders
     cart            clob            default null,
     shipped         bit(1)          not null,
     shipped_date    datetime        default null,
+    order_notes		clob			default null,
     primary key (id)
 );
 create table reviews

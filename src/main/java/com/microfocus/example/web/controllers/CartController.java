@@ -19,6 +19,9 @@
 
 package com.microfocus.example.web.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.microfocus.example.config.LocaleConfiguration;
 import com.microfocus.example.entity.CustomUserDetails;
 import com.microfocus.example.entity.Order;
@@ -110,6 +113,15 @@ public class CartController extends AbstractBaseController {
         } else {
             try {
                 //userService.saveUserFromUserForm(userForm);
+            	log.info("orderNotes: " + orderForm.getNotes());
+            	ObjectMapper MAPPER = new JsonMapper();
+            	try {
+					Object orderNotes = MAPPER.readValue((String)orderForm.getNotes(), Object.class);
+					orderForm.setNotes(orderNotes);
+				} catch (JsonProcessingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
                 Order otmp = productService.newOrderFromOrderForm(orderForm);
                 redirectAttributes.addFlashAttribute("orderNum", otmp.getOrderNum());
                 redirectAttributes.addFlashAttribute("orderId", otmp.getId());
