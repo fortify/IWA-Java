@@ -43,6 +43,7 @@ public class OrderResponse {
     private Boolean shipped;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm:ss")
     private Date shippedDate;
+    private Object notes;
 
     public OrderResponse() {
     }
@@ -56,6 +57,7 @@ public class OrderResponse {
         this.amount = order.getAmount();
         this.shipped = order.getShipped();
         this.shippedDate = order.getShippedDate();
+        this.setNotes(order.getNotes());
     }
 
     public UUID getId() {
@@ -90,7 +92,15 @@ public class OrderResponse {
         return shippedDate;
     }
 
-    @Override
+    public Object getNotes() {
+		return notes;
+	}
+
+	public void setNotes(Object notes) {
+		this.notes = notes;
+	}
+
+	@Override
     public String toString() {
         return "OrderResponse(" + orderNum + " : amount : " + amount + ")";
     }

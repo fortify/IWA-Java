@@ -50,6 +50,8 @@ public class AdminOrderForm {
 
     @DateTimeFormat(pattern = "MM-dd-yyyy")
     private Date shippedDate;
+    
+    private Object notes;
 
     public AdminOrderForm() {
     }
@@ -63,6 +65,7 @@ public class AdminOrderForm {
         this.cart = order.getCart();
         this.shipped = order.getShipped();
         this.shippedDate = order.getShippedDate();
+        this.notes = order.getNotes();
     }
 
     public UUID getId() {
@@ -129,7 +132,15 @@ public class AdminOrderForm {
         this.shippedDate = shippedDate;
     }
 
-    @Override
+    public Object getNotes() {
+		return notes;
+	}
+
+	public void setNotes(Object notes) {
+		this.notes = notes;
+	}
+
+	@Override
     public String toString() {
         return "AdminOrderForm(" + id + " : " + orderNum + " for: " + user.getUsername() + " amount : " + amount + ")";
     }
