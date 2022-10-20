@@ -83,6 +83,22 @@ There is also an administrative user:
 Upon login, you will be subsequently asked for a Multi-Factor Authentication (MFA) code. This functionality
 is not yet enabled and you can enter anything here, e.g. `12345`.
 
+### REST APIs 
+To run (and test) locally in development mode, Go to Home Page -> My Account -> API Explorer OR
+use the following URL: [http://localhost:8888/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config](http://localhost:8888/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config)
+
+### API Authentication
+every API endpoint is behind authenitcation and thus require to authenticate with JWT Token before pro
+Go To "Site" Operations and expand on :
+```
+/api/v3/site/sign-in
+```
+Click "Try it Out" button, provide administrative username and password mentioned above and hit "Execute" button.
+
+Copy the "accessToken" value from response and paste into Swagger Authorization (padlock) icon.
+
+Now, go ahead and try the API methods.
+
 ## Licensing
 
 This application is made available under the [GNU General Public License V3](LICENSE)
