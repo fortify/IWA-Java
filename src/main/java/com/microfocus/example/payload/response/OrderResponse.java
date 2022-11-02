@@ -39,6 +39,8 @@ public class OrderResponse {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm:ss")
     private Date orderDate;
     private String cart;
+
+    private String credit_card;
     private float amount;
     private Boolean shipped;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm:ss")
@@ -54,6 +56,7 @@ public class OrderResponse {
         this.orderNum = order.getOrderNum();
         this.orderDate = order.getOrderDate();
         this.cart = order.getCart();
+        this.credit_card = order.getCreditCard();
         this.amount = order.getAmount();
         this.shipped = order.getShipped();
         this.shippedDate = order.getShippedDate();
@@ -79,6 +82,8 @@ public class OrderResponse {
     public String getCart() {
         return cart;
     }
+
+    public String getCrediCard() {return credit_card;}
 
     public float getAmount() {
         return amount;

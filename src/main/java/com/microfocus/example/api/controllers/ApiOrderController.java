@@ -113,6 +113,25 @@ public class ApiOrderController {
         }
     }
 
+    @Operation(summary = "Get all orders", description = "get orders info", tags = {"products"}, security = @SecurityRequirement(name = "JWT Authentication"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponse.class)))),
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(implementation = ApiStatusResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(implementation = ApiStatusResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(schema = @Schema(implementation = ApiStatusResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ApiStatusResponse.class))),
+    })
+    @GetMapping(value = {"/getOrderInfo"}, produces = {"application/json"})
+    public ResponseEntity<List<OrderResponse>> getOrdersInfo() {
+        log.debug("API::Retrieving orders Info:");
+        // TODO: implement keywords, offset and limit
+            return ResponseEntity.ok().body(
+                    productService.getAllOrders().stream()
+                            .map(OrderResponse::new)
+                            .collect(Collectors.toList()));
+
+    }
+
     @Operation(summary = "Create a new order", description = "Creates a new order", tags = {"orders"}, security = @SecurityRequirement(name = "JWT Authentication"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = OrderResponse.class))),

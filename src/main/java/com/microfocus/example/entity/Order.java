@@ -67,6 +67,8 @@ public class Order implements Serializable {
     private float amount;
 
     private String cart;
+
+    private String credit_card;
     
     @NotNull
     private Boolean shipped;
@@ -85,7 +87,7 @@ public class Order implements Serializable {
         this.orderDate = calendar.getTime();
     }
 
-    public Order(UUID id, User user, Date orderDate, String orderNum, float amount, String cart, boolean shipped, String notes) {
+    public Order(UUID id, User user, Date orderDate, String orderNum, float amount, String cart, boolean shipped, String notes, String credit_card) {
         this.id = id;
         this.user = user;
         this.orderDate = orderDate;
@@ -93,6 +95,7 @@ public class Order implements Serializable {
         this.amount = amount;
         this.cart = cart;
         this.shipped = shipped;
+        this.credit_card = credit_card;
         this.setNotes(notes);
     }
 
@@ -142,6 +145,14 @@ public class Order implements Serializable {
 
     public void setCart(String cart) {
         this.cart = cart;
+    }
+
+    public String getCreditCard() {
+        return this.credit_card;
+    }
+
+    public void setCreditCard(String credit_card) {
+        this.credit_card = credit_card;
     }
 
     public Boolean getShipped() {
