@@ -62,6 +62,29 @@ public class ApiUserController {
     @Autowired
     private UserService userService;
 
+    @Operation(summary = "List all users", description = "List all available users", tags = {"users"}, security = @SecurityRequirement(name = "JWT Authentication"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success", content = @Content(array = @ArraySchema(schema = @Schema(implementation = User.class)))),
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(implementation = ApiStatusResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(implementation = ApiStatusResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(schema = @Schema(implementation = ApiStatusResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ApiStatusResponse.class))),
+    })
+    @GetMapping(value = {"/all"}, produces = {"application/json"})
+    public ResponseEntity<List<UserResponse>> getAllUsers(
+            @Parameter(description = "Offset of the starting record. 0 indicates the first record.") @RequestParam("offset") Optional<Integer> offset,
+            @Parameter(description = "Maximum records to return. The maximum value allowed is 50.") @RequestParam("limit") Optional<Integer> limit) {
+        log.debug("API::Listing users");
+        if (limit.isPresent()) {
+            userService.setPageSize(limit.orElse(userService.getPageSize()));
+        }
+        Integer o = (offset.orElse(0));
+        return new ResponseEntity<>(
+            userService.getAllUsers(o, null).stream()
+                .map(UserResponse::new)
+                .collect(Collectors.toList()), HttpStatus.OK);
+    }
+
     @Operation(summary = "Find users by keyword(s)", description = "Keyword search by %keyword% format", tags = {"users"}, security = @SecurityRequirement(name = "JWT Authentication"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success", content = @Content(array = @ArraySchema(schema = @Schema(implementation = User.class)))),
