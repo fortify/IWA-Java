@@ -41,6 +41,7 @@ public class UserResponse {
     private String state;
     private String zip;
     private String country;
+    private String gender;
     private Boolean enabled;
 
     public UserResponse() {
@@ -58,6 +59,7 @@ public class UserResponse {
         this.state = user.getState();
         this.zip= user.getZip();
         this.country = user.getCountry();
+        this.setGender(user.getGender());
         this.enabled = user.getEnabled();
     }
 
@@ -108,5 +110,13 @@ public class UserResponse {
     public Boolean getEnabled() {
         return enabled;
     }
+
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
 
 }

@@ -103,6 +103,8 @@ public class User implements Serializable {
     @Column(name = "date_created")
     private Date dateCreated;
 
+    private String gender;
+    
     @JsonProperty("enabled")
     private boolean enabled;
 
@@ -117,7 +119,7 @@ public class User implements Serializable {
     }
 
     public User(UUID id, String username, String password, String firstName, String lastName, String email, String phone,
-                String address, String city, String state, String zip, String country, boolean enabled) {
+                String address, String city, String state, String zip, String country, String gender, boolean enabled) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -130,6 +132,7 @@ public class User implements Serializable {
         this.state = state;
         this.zip = zip;
         this.country = country;
+        this.gender = gender;
         this.enabled = enabled;
     }
 
@@ -255,7 +258,15 @@ public class User implements Serializable {
         this.enabled = enabled;
     }
 
-    public Set<Authority> getAuthorities() {
+    public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	public Set<Authority> getAuthorities() {
         return authorities;
     }
 

@@ -97,6 +97,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                                         results.getString("state"),
                                         results.getString("zip"),
                                         results.getString("country"),
+                                        results.getString("gender"),
                                         results.getBoolean("enabled")
                                 );
                                 utmp.setCountry(results.getString("country"));

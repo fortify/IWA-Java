@@ -73,6 +73,8 @@ public class UserRequest {
     private String state;
     private String zip;
     private String country;
+    
+    private String gender;
 
     private Boolean enabled;
 
@@ -91,6 +93,7 @@ public class UserRequest {
         this.state = user.getState();
         this.zip= user.getZip();
         this.country = user.getCountry();
+        this.setGender(user.getGender());
         this.enabled = user.getEnabled();
     }
 
@@ -206,7 +209,15 @@ public class UserRequest {
         this.enabled = enabled;
     }
 
-    @Override
+    public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	@Override
     public String toString() {
         return "UserRequest{" +
                 "id=" + id +

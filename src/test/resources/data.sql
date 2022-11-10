@@ -1,12 +1,12 @@
 INSERT INTO authorities (name, id)
 values ('ROLE_TEST', '92f90350-e795-4019-812a-afd23300343f');
-INSERT INTO users (id, username, password, first_name, last_name, email, phone, address, city, state, zip, country, enabled, date_created)
+INSERT INTO users (id, username, password, first_name, last_name, email, phone, address, city, state, zip, country, enabled, gender, date_created)
 VALUES ('bd5b9e2f-ac55-4e34-a76d-599b7e5b3308', 'test1', '$2a$10$YFhTnHpCL.Z0Ev0j1CbEUub7sIWmN7Qd5RmnU8g5ekuoapV7Zdx32',
         'Test', 'User 1',
         'test1@localhost',
         '0123456789',
         '1 Somewhere Street', 'London', 'Greater London', 'SW1', 'United Kingdom',
-        1, CURDATE());
+        1, 'Female', CURDATE());
 INSERT INTO user_authorities (authority_id, user_id)
 VALUES ('92f90350-e795-4019-812a-afd23300343f', 'bd5b9e2f-ac55-4e34-a76d-599b7e5b3308');
 INSERT INTO products (id, code, name, rating, summary, description, image, price, in_stock,

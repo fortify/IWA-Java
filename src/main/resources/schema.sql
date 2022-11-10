@@ -38,6 +38,7 @@ create table users
     state        varchar(255) default null,
     zip          varchar(255) default null,
     country      varchar(255) default null,
+    gender       varchar(255) not null,
     enabled      bit(1)       not null,
     primary key (id)
 );
