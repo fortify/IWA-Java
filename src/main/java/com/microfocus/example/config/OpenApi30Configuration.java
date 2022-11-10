@@ -35,8 +35,8 @@ import org.springframework.context.annotation.Configuration;
                 "Most operations require authentication via a user specific JWT token. To retrieve a JWT token for a user you can use the " +
                 " '/authentication/sign-in' operation below and then copy the value of the 'accessToken' field. This value can then be " +
                 "entered when you click on the 'Authorize' button or lock icons.",
-        version = "v3"),
-        servers = @Server(
+        version = "v3")
+        /*servers = @Server(
                 url = "{protocol}://{environment}",
                 variables = {
                     @ServerVariable(
@@ -49,7 +49,8 @@ import org.springframework.context.annotation.Configuration;
                             defaultValue = "localhost:8080"
                     )
                 }
-        )
+                
+        )*/
 )
 /*@SecurityScheme(
         name = "basicAuth",
