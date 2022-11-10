@@ -51,6 +51,8 @@ public class OrderRequest {
 
     private String cart;
 
+    private String creditCard;
+
     private Boolean shipped;
 
     @DateTimeFormat(pattern = "MM-dd-yyyy")
@@ -67,6 +69,7 @@ public class OrderRequest {
         this.orderDate = order.getOrderDate();
         this.amount = order.getAmount();
         this.cart = order.getCart();
+        this.creditCard = order.getCreditCard();
         this.shipped = order.getShipped();
         this.shippedDate = order.getShippedDate();
         this.setNotes(order.getNotes());
@@ -118,6 +121,14 @@ public class OrderRequest {
 
     public void setCart(String cart) {
         this.cart = cart;
+    }
+
+    public String getCreditCard() {
+        return this.creditCard;
+    }
+
+    public void setCreditCard(String creditCard) {
+        this.creditCard = creditCard;
     }
 
     public Boolean getShipped() {

@@ -106,18 +106,18 @@ INSERT INTO messages (id, user_id, text, read)
 values ('6aa03b01-4288-4e6e-bff6-dfe0f462cf68', '92a82f45-7a03-42f3-80f8-ce4e9892409d', 'Test message - please ignore!',
         0);
 
-INSERT INTO orders (id, user_id, order_date, order_num, amount, shipped, cart)
+INSERT INTO orders (id, user_id, order_date, order_num, amount, shipped, cart, credit_card)
 VALUES ('c9b31f33-17a4-4fcd-927e-c14cdee32201', '32e7db01-86bc-4687-9ecb-d79b265ac14f', CURDATE()-5, 'OID-P400-0001', 100.0, 0,
-        '[{"id":"6bbbeb10-6709-4163-a790-f691b09d6aca","name":"Dontax","price":8.50,"quantity":4}]');
-INSERT INTO orders (id, user_id, order_date, order_num, amount, shipped, cart)
+        '[{"id":"6bbbeb10-6709-4163-a790-f691b09d6aca","name":"Dontax","price":8.50,"quantity":4}]', '4375 2134 2183 3846');
+INSERT INTO orders (id, user_id, order_date, order_num, amount, shipped, cart, credit_card)
 VALUES ('c94cbf6d-9baa-4a02-8eea-b13ceb43474d', '32e7db01-86bc-4687-9ecb-d79b265ac14f', CURDATE()-10, 'OID-P400-0001', 25.0, 0,
-        '[{"id":"6bbbeb10-6709-4163-a790-f691b09d6aca","name":"Dontax","price":8.50,"quantity":1}]');
-INSERT INTO orders (id, user_id, order_date, order_num, amount, shipped, shipped_date, cart)
+        '[{"id":"6bbbeb10-6709-4163-a790-f691b09d6aca","name":"Dontax","price":8.50,"quantity":1}]', '4375 2134 2183 3847');
+INSERT INTO orders (id, user_id, order_date, order_num, amount, shipped, shipped_date, cart, credit_card)
 VALUES ('81550b4f-c660-41ec-a6f3-076b611add9b', '32e7db01-86bc-4687-9ecb-d79b265ac14f', CURDATE()-20, 'OID-P401-0009', 50.0, 1, CURDATE(),
-        '[{"id":"6bbbeb10-6709-4163-a790-f691b09d6aca","name":"Dontax","price":8.50,"quantity":2}]');
-INSERT INTO orders (id, user_id, order_date, order_num, amount, shipped, cart)
+        '[{"id":"6bbbeb10-6709-4163-a790-f691b09d6aca","name":"Dontax","price":8.50,"quantity":2}]', '4375 2134 2183 3848');
+INSERT INTO orders (id, user_id, order_date, order_num, amount, shipped, cart, credit_card)
 VALUES ('db4cfab1-ff1d-4bca-a662-394771841383', 'db4cfab1-ff1d-4bca-a662-394771841383', CURDATE()-10, 'OID-G320-0051', 25.0, 0,
-        '[{"id":"6bbbeb10-6709-4163-a790-f691b09d6aca","name":"Dontax","price":8.50,"quantity":1}]');
+        '[{"id":"6bbbeb10-6709-4163-a790-f691b09d6aca","name":"Dontax","price":8.50,"quantity":1}]', '4375 2134 2183 3849');
 
 INSERT INTO reviews (id, product_id, user_id, review_date, comment, rating, visible)
 VALUES ('822f734a-3d13-4ebc-bff6-9c36d29866a6', 'eec467c8-5de9-4c7c-8541-7b31614d31a0', '32e7db01-86bc-4687-9ecb-d79b265ac14f',
