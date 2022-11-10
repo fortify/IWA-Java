@@ -87,6 +87,28 @@ public class ApiProductController {
                 .collect(Collectors.toList()), HttpStatus.OK);
     }
 
+    @Operation(summary = "Find products by keyword(s) (no pagination)", description = "Keyword search by %keyword% format ", tags = {"products"}, security = @SecurityRequirement(name = "JWT Authentication"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ProductResponse.class)))),
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(implementation = ApiStatusResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(implementation = ApiStatusResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(schema = @Schema(implementation = ApiStatusResponse.class))),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ApiStatusResponse.class))),
+    })
+    @GetMapping(value = {"/all"}, produces = {"application/json"})
+    public ResponseEntity<List<ProductResponse>> getProductsByKeywordsNoPagination(
+            @Parameter(description = "Keyword(s) search for products to be found.") @RequestParam("keywords") Optional<String> keywords) {
+        log.debug("API::Retrieving products by keyword(s)");
+        productService.setPageSize(productService.getPageSize());
+
+        String k = (keywords.orElse(""));
+        Integer o = 0;
+        return new ResponseEntity<>(
+            productService.getAllProducts(o, k).stream()
+                .map(ProductResponse::new)
+                .collect(Collectors.toList()), HttpStatus.OK);
+    }
+
     @Operation(summary = "Find product by Id", description = "Find a product by UUID", tags = {"products"}, security = @SecurityRequirement(name = "JWT Authentication"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success", content = @Content(schema = @Schema(implementation = ProductResponse.class))),
