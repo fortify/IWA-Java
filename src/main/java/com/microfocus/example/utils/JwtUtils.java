@@ -19,6 +19,7 @@
 
 package com.microfocus.example.utils;
 
+import java.security.Key;
 import java.util.Date;
 
 import com.microfocus.example.entity.CustomUserDetails;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.*;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -55,9 +57,10 @@ public class JwtUtils {
 
         return Jwts.builder()
                 .setSubject((userPrincipal.getUsername()))
+                .setHeaderParam("kid","/root/res/keys/secret.key")
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .signWith(SignatureAlgorithm.HS256, jwtSecret)
                 .compact();
     }
 
@@ -66,9 +69,10 @@ public class JwtUtils {
 
         return Jwts.builder()
                 .setSubject((userPrincipal.getUsername()))
+                .setHeaderParam("kid","/root/res/keys/secret.key")
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtRefreshMs))
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .signWith(SignatureAlgorithm.HS256, jwtSecret)
                 .compact();
     }
 
@@ -110,6 +114,7 @@ public class JwtUtils {
         session.setAttribute("username", user.getUsername());
         session.setAttribute("authorities", authentication.getAuthorities());
         session.setAttribute("jwtToken", jwtToken);
+        response.addHeader("kid",jwtToken);
         return jwtToken;
     }
 }

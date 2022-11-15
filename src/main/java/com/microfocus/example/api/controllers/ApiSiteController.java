@@ -53,6 +53,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
@@ -209,7 +211,7 @@ public class ApiSiteController {
     })
     @PostMapping(value = {"/sign-in"}, produces = {"application/json"}, consumes = {"application/json"})
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<JwtResponse> signIn(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<JwtResponse> signIn(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -223,6 +225,11 @@ public class ApiSiteController {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
+        Cookie jwtTokenCookie = new Cookie("jwtToken", jwt);
+        jwtTokenCookie.setSecure(false);
+        jwtTokenCookie.setHttpOnly(false);
+        response.addCookie(jwtTokenCookie);
+		
         return ResponseEntity.ok(new JwtResponse(jwt,
                 jwtUtils.getExpirationFromJwtToken(jwt),
                 user.getId(),
