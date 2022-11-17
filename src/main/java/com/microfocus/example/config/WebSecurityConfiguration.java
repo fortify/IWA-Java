@@ -74,6 +74,11 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         return new AuthenticationTokenFilter();
     }
 
+    @Bean
+    public HttpMethodOverrideHeaderFilter httpMethodOverrideHeaderFilter() {
+        return new HttpMethodOverrideHeaderFilter();
+    }
+
     @Autowired
     private SessionRegistry sessionRegistry;
 
