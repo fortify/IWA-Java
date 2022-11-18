@@ -15,19 +15,12 @@ fortify-dast:
   script:
     - fcli ssc session login 
     - fcli sc-dast session login
-
-    # Run DAST scan. Note that we don't have commands yet for configuring a scan for a particular
-    # application version, so results will be published to the application version associated with
-    # the given CICDToken
+    
     - fcli sc-dast scan start $SC_DAST_SCAN_NAME --settings $SC_DAST_SETTINGS --store '?'
-
-    # Wait for both DAST scan to complete
     - fcli sc-dast scan wait-for '?' -i 30s
-
-    # Run FortifyVulnerabilityExporter;
+    
     - FortifyVulnerabilityExporter SSCToGitLabDAST --ssc.baseUrl=$FCLI_SSC_URL --ssc.user="$FCLI_SSC_USER" --ssc.password="$FCLI_SSC_PASSWORD" --ssc.version.id=$SSC_AV_ID
-
-    # Clean up tokens, session variables, ...
+    
     - fcli sc-dast session logout
     - fcli ssc session logout
   artifacts:
