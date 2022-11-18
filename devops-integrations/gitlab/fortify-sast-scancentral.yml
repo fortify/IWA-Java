@@ -1,0 +1,39 @@
+# Integrate Fortify ScanCentral Static AppSec Testing (SAST) into your Gitlab CICD pipeline
+# The following Gitlab environment variables must be defined before using this job
+#   - $FCLI_SSC_URL
+#   - $FCLI_SSC_USER
+#   - $FCLI_SSC_PASSWORD
+#   - $FCLI_SC_SAST_CLIENT_AUTH_TOKEN
+#   - $FCLI_SC_SAST_SCAN_CI_TOKEN
+#   - $FCLI_SSC_CITOKEN
+#   - $SSC_AV_ID
+
+fortify-sast:
+  stage: test
+  image: rsenden/fortify-ci-tools:fcli-beta
+  needs: [build]
+  variables:
+    SC_SAST_SENSOR_VERSION: '22.2'
+  script:
+    - fcli ssc session login
+    - fcli sc-sast session login
+
+    # Package sources & run SAST scan
+    - scancentral package -bt mvn -o package.zip 
+    - fcli sc-sast scan start package package.zip --sensor-version=$SC_SAST_SENSOR_VERSION --appversion=$SSC_AV_ID --store '?'
+
+    # Wait for SAST scan to complete
+    - fcli sc-sast scan wait-for-artifact '?' -i 30s
+
+    # Run FortifyVulnerabilityExporter to upload results
+    - FortifyVulnerabilityExporter SSCToGitLabSAST --ssc.baseUrl=$FCLI_SSC_URL --ssc.user="$FCLI_SSC_USER" --ssc.password="$FCLI_SSC_PASSWORD" --ssc.version.id=$SSC_AV_ID
+
+    # Clean up tokens, session variables, ...
+    - fcli sc-sast session logout
+    - fcli ssc session logout  
+  allow_failure: true
+  artifacts:
+    reports:
+      sast: gl-fortify-sast.json
+    expire_in: 3 days
+    when: always

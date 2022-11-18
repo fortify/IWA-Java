@@ -1,0 +1,37 @@
+# Integrate Fortify ScanCentral Dynamic AppSec Testing (DAST) into your Gitlab CICD pipeline
+# The following Gitlab environment variables must be defined before using this job
+#   - $FCLI_SSC_URL
+#   - $FCLI_SSC_USER
+#   - $FCLI_SSC_PASSWORD
+#   - $SC_DAST_SETTINGS
+#   - $SSC_AV_ID
+
+fortify-dast:
+  image: rsenden/fortify-ci-tools:fcli-beta
+  stage: test
+  needs: [deploy]
+  variables:
+    SC_DAST_SCAN_NAME: "IWA-Java-Gitlab-UI"
+  script:
+    - fcli ssc session login 
+    - fcli sc-dast session login
+
+    # Run DAST scan. Note that we don't have commands yet for configuring a scan for a particular
+    # application version, so results will be published to the application version associated with
+    # the given CICDToken
+    - fcli sc-dast scan start $SC_DAST_SCAN_NAME --settings $SC_DAST_SETTINGS --store '?'
+
+    # Wait for both DAST scan to complete
+    - fcli sc-dast scan wait-for '?' -i 30s
+
+    # Run FortifyVulnerabilityExporter;
+    - FortifyVulnerabilityExporter SSCToGitLabDAST --ssc.baseUrl=$FCLI_SSC_URL --ssc.user="$FCLI_SSC_USER" --ssc.password="$FCLI_SSC_PASSWORD" --ssc.version.id=$SSC_AV_ID
+
+    # Clean up tokens, session variables, ...
+    - fcli sc-dast session logout
+    - fcli ssc session logout
+  artifacts:
+    reports:
+      dast: gl-fortify-dast.json
+    expire_in: 3 days
+    when: always
