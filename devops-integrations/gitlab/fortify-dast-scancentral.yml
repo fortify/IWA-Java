@@ -11,7 +11,7 @@ fortify-dast:
   stage: test
   needs: [deploy]
   variables:
-    SC_DAST_SCAN_NAME: "IWA-Java-Gitlab-UI"
+    SC_DAST_SCAN_NAME: "IWA-Java"
   script:
     - fcli ssc session login 
     - fcli sc-dast session login
