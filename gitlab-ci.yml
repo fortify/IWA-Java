@@ -1,0 +1,34 @@
+include:
+  - local: '/devops-integrations/gitlab/debricked-sca.yml'
+  - local: '/devops-integrations/gitlab/fortify-sast-scancentral.yml'
+  - local: '/devops-integrations/gitlab/fortify-dast-scancentral.yml'
+  #- local: '/devops-integrations/gitlab/fortify-sast-fod.yml'
+  
+stages:
+  - build
+  - deploy
+  - test
+
+build:
+  stage: build
+  image: maven:3.8.6-eclipse-temurin-8
+
+  script: 
+    - echo Building project...
+    - mvn -Pjar clean package
+    - mvn dependency:tree
+        -DoutputFile=.debricked-maven-dependencies.tgf
+        -DoutputType=tgf
+  when: manual
+  artifacts:
+    paths:
+    - .debricked-maven-dependencies.tgf
+    - /
+    expire_in: 3 days
+    when: on_success
+
+deploy:
+  stage: deploy
+  needs: [build]
+  script:
+    - echo 'Simulating deployment of application...'

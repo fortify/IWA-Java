@@ -1,0 +1,25 @@
+# Integrate Fortify ScanCentral Dynamic AppSec Testing (DAST) into your Gitlab CICD pipeline
+# The following Gitlab environment variables must be defined before using this job
+#   - $FOD_RELEASE_ID
+#   - $FOD_USER
+#   - $FOD_PAT
+#   - $FOD_TENANT
+
+fortify-sast:
+  image: fortifydocker/fortify-ci-tools:3-jdk-11
+  stage: test
+  variables:
+    FOD_URL: "https://ams.fortify.com"
+    FOD_API_URL: "https://api.ams.fortify.com/"
+    FOD_UPLOADER_OPTS: "-ep 2 -pp 0 -I 1 -apf"
+    FOD_NOTES: "Triggered by Gitlab Pipeline IID $CI_PIPELINE_IID: $CI_PIPELINE_URL"
+  script:
+    - scancentral package -bt mvn -oss -o package.zip
+    - FoDUpload -z package.zip -aurl $FOD_API_URL -purl $FOD_URL -rid "$FOD_RELEASE_ID" -tc "$FOD_TENANT" -uc "$FOD_USER" "$FOD_PAT" $FOD_UPLOADER_OPTS -n "$FOD_NOTES"
+    - FortifyVulnerabilityExporter FoDToGitLabSAST --fod.baseUrl=$FOD_URL --fod.tenant="$FOD_TENANT" --fod.userName="$FOD_USER" --fod.password="$FOD_PAT" --fod.release.id=$FOD_RELEASE_ID
+  allow_failure: true
+  artifacts:
+    reports:
+      sast: gl-fortify-sast.json
+    expire_in: 3 days
+    when: always
