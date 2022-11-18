@@ -18,17 +18,13 @@ fortify-sast:
     - fcli ssc session login
     - fcli sc-sast session login
 
-    # Package sources & run SAST scan
     - scancentral package -bt mvn -o package.zip 
     - fcli sc-sast scan start package package.zip --sensor-version=$SC_SAST_SENSOR_VERSION --appversion=$SSC_AV_ID --store '?'
 
-    # Wait for SAST scan to complete
     - fcli sc-sast scan wait-for-artifact '?' -i 30s
 
-    # Run FortifyVulnerabilityExporter to upload results
     - FortifyVulnerabilityExporter SSCToGitLabSAST --ssc.baseUrl=$FCLI_SSC_URL --ssc.user="$FCLI_SSC_USER" --ssc.password="$FCLI_SSC_PASSWORD" --ssc.version.id=$SSC_AV_ID
 
-    # Clean up tokens, session variables, ...
     - fcli sc-sast session logout
     - fcli ssc session logout  
   allow_failure: true
