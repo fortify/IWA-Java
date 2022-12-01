@@ -1,12 +1,10 @@
 version: 0.2
 env:
-  variables:
-        FOD_RELEASE_ID: "XXXXX"
   parameter-store:
-        FOD_BASEURL: "/fod/baseurl"
+        FOD_RELEASE_ID: "/fod/releaseid"
         FOD_TENANT: "/fod/tenant"
-        FOD_USER: "/fod/user"   #Client ID
-        FOD_PWD: "/fod/pwd"     #Client Secret
+        FOD_USER: "/fod/user"
+        FOD_PAT: "/fod/pat"
 phases:
   install:
     runtime-versions:
