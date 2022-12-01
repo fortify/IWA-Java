@@ -1,66 +1,66 @@
 #!/bin/bash
+# Integrate Fortify on Demand Static AppSec Testing (SAST) into your AWS Codestar pipeline
 
-#Parameters Section
+# *** Configuration ***
 
-#download the required tools installation script
-sha256_FTI='d9ebd439c5b426a5ea207e6c1a17a466f79363ca5735fea1d7a4d8ef5807dc06'
-fortify_tool_installer='https://raw.githubusercontent.com/fortify/FortifyToolsInstaller/v2.14.0/FortifyToolsInstaller.sh'  # BASE UTILITY DO NOT CHANGE
-
-fod_url=$FOD_BASEURL 												# Fortify On Demand URL 
-fod_api_url='https://api.'`echo "$fod_url" | awk -F/ '{print $3}'`	# Fortify On Demand API URL
-fortify_tools_dir='/root/.fortify/tools/FoDUploader/v5.4.0'			# Default installation directory
-fod_util='FoDUpload.jar'											# FoD Utility alias set into FTI Script [[DO NOT CHANGE]]
-
-#FOD Details to Upload Code
+# The following environment variables must be defined
 fod_tenant=$FOD_TENANT 			# TENANT ID
-fod_user_key=$FOD_USER			# FOD USER KEY
-fod_pwd_secret=$FOD_PWD			# FOD PAT
-fod_release_id=$FOD_RELEASE_ID	# FOD APPLICATION BASED RELEASE ID
+fod_user=$FOD_USER			# FOD USER KEY
+fod_pat=$FOD_PAT			# FOD PAT
+fod_release_id=$FOD_RELEASE_ID		# FOD APPLICATION BASED RELEASE ID
 
-#Parameters to configure installable
+# Local variables (modify as needed)
+fod_url='https://ams.fortify.com'
+fod_api_url='https://api.ams.fortify.com/"
+fod_uploader_opts='-ep 2 -pp 0 -I 1 -apf'
+fod_notes='Triggered by AWS Codestar'
+fod_uploader_version='v5.4.0'
+scancentral_client_version='22.1.2'
+fti_version='v2.14.0'
+fti_sha='d9ebd439c5b426a5ea207e6c1a17a466f79363ca5735fea1d7a4d8ef5807dc06'
+
+# Local variables (DO NOT MODIFY)
+fortify_tools_dir='/root/.fortify/tools/FoDUploader/$fod_uploader_version'		
 fti_install='FortifyToolsInstaller.sh'
+fod_util='FoDUpload.jar'
 
-#Download required files, please ensure the URL is available
-wget "$fortify_tool_installer" 
+# *** Execution ***
+
+# Download Fortify Tools Installer
+wget "https://raw.githubusercontent.com/fortify/FortifyToolsInstaller/$fti_version/FortifyToolsInstaller.sh" 
 e=$?        # return code last command
 if [ "${e}" -ne "0" ]; then
-	echo "ERROR: Can;t downloads the requierd files from server, can not continue - exit code ${e}"
+	echo "ERROR: Failed to download Fortify Tools Installer - exit code ${e}"
 	exit 100
 fi
-# End of Download
 
-#persmission to execute
+# Set permission to execute Fortify Tools Installer and verify integrity
 chmod +x "$fti_install"
 sha256sum -c <(echo "$sha256_FTI $fti_install")
 e=$?        # return code last command
 if [ "${e}" -ne "0" ]; then
-	echo "ERROR: Hashes could not be matched, can not continue - exit code ${e}"
+	echo "ERROR: Fortify Tool Installer hash does not match - exit code ${e}"
 	exit 100
 fi
 
-FTI_TOOLS=sc:22.1.2 source $fti_install
+# Download and install Fortify ScanCentral Client
+FTI_TOOLS=sc:$scancentral_client_version source $fti_install
 e=$?        # return code last command
 if [ "${e}" -ne "0" ]; then
-	echo "ERROR: Can;t downloads the requierd files from server, can not continue - exit code ${e}"
+	echo "ERROR: Failed to download and install Fortify ScanCentral Client - exit code ${e}"
 	exit 100
 fi
 
-#Execute the shell script to download and install fortify tools
-FTI_TOOLS=fu:v5.4.0 source $fti_install
+# Download and install Fortify on Demand Uploader
+FTI_TOOLS=fu:$fod_uploader_version source $fti_install
 e=$?        # return code last command
 if [ "${e}" -ne "0" ]; then
-	echo "ERROR: Can;t downloads the requierd files from server, can not continue - exit code ${e}"
+	echo "ERROR: Failed to download and install Fortify on Demand Uploader - exit code ${e}"
 	exit 100
 fi
 
-#Generate Java Package to upload in FoD
-scancentral package -o sourcecode.zip --build-tool mvn
+# Generate Java Package for upload to Fortify on Demand
+scancentral package -bt mvn -oss -o package.zip
 
-java -jar $fortify_tools_dir/$fod_util -ac $fod_user_key $fod_pwd_secret -rid $fod_release_id -purl $fod_url -aurl $fod_api_url -tc $fod_tenant -z sourcecode.zip -ep 2 -rp 2 -pp 2 
-e=$?        # return code last command
-if [ "${e}" -ne "0" ]; then
-	echo "ERROR: Fortify On Demand throws error, can not continue - exit code ${e}"
-	exit 100
-fi
-
-echo "INFO: Scan Submitted Successfully..."
+# Execute Fortify on Demand SAST scan
+java -jar $fortify_tools_dir/$fod_util -z package.zip -aurl $fod_api_url -purl $fod_url -rid $fod_release_id -tc $fod_tenant -uc $fod_user $fod_pat $fod_uploader_opts -n $fod_notes
