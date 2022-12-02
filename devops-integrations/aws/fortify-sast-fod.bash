@@ -11,16 +11,16 @@ fod_release_id=$FOD_RELEASE_ID		# FOD APPLICATION BASED RELEASE ID
 
 # Local variables (modify as needed)
 fod_url='https://ams.fortify.com'
-fod_api_url='https://api.ams.fortify.com/"
+fod_api_url='https://api.ams.fortify.com/'
 fod_uploader_opts='-ep 2 -pp 0 -I 1 -apf'
-fod_notes='Triggered by AWS Codestar'
+fod_notes="Triggered by AWS Codestar"
 fod_uploader_version='v5.4.0'
 scancentral_client_version='22.1.2'
 fti_version='v2.14.0'
 fti_sha='d9ebd439c5b426a5ea207e6c1a17a466f79363ca5735fea1d7a4d8ef5807dc06'
 
 # Local variables (DO NOT MODIFY)
-fortify_tools_dir='/root/.fortify/tools/FoDUploader/$fod_uploader_version'		
+fortify_tools_dir="/root/.fortify/tools/FoDUploader/$fod_uploader_version"		
 fti_install='FortifyToolsInstaller.sh'
 fod_util='FoDUpload.jar'
 
@@ -36,7 +36,7 @@ fi
 
 # Set permission to execute Fortify Tools Installer and verify integrity
 chmod +x "$fti_install"
-sha256sum -c <(echo "$sha256_FTI $fti_install")
+sha256sum -c <(echo "$fti_sha $fti_install")
 e=$?        # return code last command
 if [ "${e}" -ne "0" ]; then
 	echo "ERROR: Fortify Tool Installer hash does not match - exit code ${e}"
@@ -63,4 +63,4 @@ fi
 scancentral package -bt mvn -oss -o package.zip
 
 # Execute Fortify on Demand SAST scan
-java -jar $fortify_tools_dir/$fod_util -z package.zip -aurl $fod_api_url -purl $fod_url -rid $fod_release_id -tc $fod_tenant -uc $fod_user $fod_pat $fod_uploader_opts -n $fod_notes
+java -jar $fortify_tools_dir/$fod_util -z package.zip -aurl $fod_api_url -purl $fod_url -rid $fod_release_id -tc $fod_tenant -uc $fod_user $fod_pat $fod_uploader_opts -n "$fod_notes"
