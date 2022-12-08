@@ -1,0 +1,59 @@
+# Integrate Fortify on Demand Static AppSec Testing (SAST) into your Circle CI  pipeline
+# The following environment variables must be defined in CircleCI context before using this job
+#   - $FOD_RELEASE_ID
+#   - $FOD_USER
+#   - $FOD_PAT
+#   - $FOD_TENANT
+version: '2.1'
+jobs:
+  build:
+    working_directory: ~/circleci-iwajava
+    docker:
+      - image: maven:3.8.6-openjdk-11
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          key: circleci-iwajava-{{ checksum "pom.xml" }}
+
+      - run: mvn package
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: circleci-iwajava-{{ checksum "pom.xml" }}
+
+      - store_test_results:
+          path: target/surefire-reports
+
+      - store_artifacts:
+          path: target/iwa.jar
+          
+  scan:
+    environment:
+      FOD_URL: "https://ams.fortify.com"
+      FOD_API_URL: "https://api.ams.fortify.com"
+      FOD_UPLOADER_OPTS: "-ep 2 -pp 0 -I 1 -apf"
+      FOD_NOTES: "Triggered by CircleCI Pipeline"
+    working_directory: ~/circleci-iwajava
+    docker:
+      - image: fortifydocker/fortify-ci-tools:latest
+
+    steps:
+      - checkout
+
+      - run: 
+          command: |
+            scancentral package -bt mvn -oss -o package.zip
+            FoDUpload -z package.zip -aurl $FOD_API_URL -purl $FOD_URL -rid $FOD_RELEASE_ID -tc $FOD_TENANT -uc $FOD_USER $FOD_PAT $FOD_UPLOADER_OPTS -n "$FOD_NOTES"
+
+# Orchestrate job run sequence
+workflows:
+  build_and_scan:
+    jobs:
+      - build
+      - scan:
+          context: FOD
+          requires:
+            - build
