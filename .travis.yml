@@ -1,0 +1,31 @@
+# Integrate Fortify on Demand Static AppSec Testing (SAST) into your Travis CI  pipeline
+# The following environment variables must be defined in Repository settings before using this job
+#   - $FOD_RELEASE_ID
+#   - $FOD_USER
+#   - $FOD_PAT
+#   - $FOD_TENANT
+version: ~> 1.0
+language: java
+dist: focal
+os: linux
+
+jdk:
+ - openjdk11
+
+cache:
+  directories:
+  - $HOME/.m2/repository
+
+
+after_success:
+  ###################################################################
+  #                     INTEGRATE FORTIFY SAST                      #
+  #                                                                 #
+  # For FORTIFY ON DEMAND uncomment the next line                   #
+  - bash devops-integrations/.travisci/fortify-sast-fod.sh
+  #                                                                 #
+  # For FORTIFY SCANCENTRAL uncomment the next line                 #
+  #- bash devops-integrations/.travisci/fortify_sast_scancentral.sh             
+  #                                                                 #
+  #                                                                 #
+  ################################################################### 

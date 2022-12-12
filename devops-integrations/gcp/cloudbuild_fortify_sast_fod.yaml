@@ -1,3 +1,10 @@
+# Integrate Fortify on Demand Static AppSec Testing (SAST) into your Google Cloud Build pipeline
+# The following Google Cloud Build Secrets must be defined before using this job
+#   - $$FOD_RELEASE_ID
+#   - $$FOD_USER
+#   - $$FOD_PAT
+#   - $$FOD_TENANT
+
 steps:
 - name: maven:3.6.0-jdk-11-slim
   entrypoint: 'mvn'
@@ -12,20 +19,23 @@ steps:
   args: 
     - -c
     - |
-       fod_api_url='https://api.'`echo "$$FOD_BASEURL" | awk -F/ '{print $3}'`
-       scancentral package -o sourcecode.zip --build-tool mvn
-       java -jar /opt/Fortify/FodUpload/FoDUpload.jar -ac $$FOD_USER $$FOD_PWD -rid $$FOD_RELEASE_ID -purl $$FOD_BASEURL -aurl $fod_api_url -tc $$FOD_TENANT -z sourcecode.zip -ep 2 -rp 2 -pp 2 
-  secretEnv: ['FOD_USER', 'FOD_PWD', 'FOD_TENANT'] 
+       scancentral package -bt mvn -oss -o package.zip
+       FoDUpload -z package.zip -aurl $$FOD_API_URL -purl $$FOD_URL -rid $$FOD_RELEASE_ID -tc $$FOD_TENANT -uc $$FOD_USER $$FOD_PAT $$FOD_UPLOADER_OPTS -n "$$FOD_NOTES"
+  secretEnv: ['FOD_RELEASE_ID', 'FOD_USER', 'FOD_PAT', 'FOD_TENANT'] 
   env:
-    - 'FOD_BASEURL=${_FOD_URL}' 
-    - 'FOD_RELEASE_ID=${_FOD_RELEASE_ID}' 
+    - 'FOD_URL=https://ams.fortify.com' 
+    - 'FOD_API_URL=https://api.ams.fortify.com' 
+    - 'FOD_UPLOADER_OPTS=-ep 2 -pp 0 -I 1 -apf' 
+    - 'FOD_NOTES=Triggered by GCP Pipeline' 
   id: 'fortify-static-scan'
   waitFor: ['build-image-IWAJava']
 availableSecrets:
   secretManager:
-  - versionName: projects/$PROJECT_ID/secrets/fod_pwd/versions/1
-    env: 'FOD_PWD'
-  - versionName: projects/$PROJECT_ID/secrets/fod_user/versions/1
+  - versionName: projects/$PROJECT_ID/secrets/fod_release_id/versions/latest
+    env: 'FOD_RELEASE_ID'
+  - versionName: projects/$PROJECT_ID/secrets/fod_user/versions/latest
     env: 'FOD_USER'
-  - versionName: projects/$PROJECT_ID/secrets/fod_tenant/versions/1
+  - versionName: projects/$PROJECT_ID/secrets/fod_pat/versions/latest
+    env: 'FOD_PAT' 
+  - versionName: projects/$PROJECT_ID/secrets/fod_tenant/versions/latest
     env: 'FOD_TENANT'    

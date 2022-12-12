@@ -1,4 +1,4 @@
-# Integrate Fortify ScanCentral Dynamic AppSec Testing (DAST) into your Gitlab CICD pipeline
+# Integrate Fortify on Demand Static AppSec Testing (SAST) into your Gitlab CICD pipeline
 # The following Gitlab environment variables must be defined before using this job
 #   - $FOD_RELEASE_ID
 #   - $FOD_USER

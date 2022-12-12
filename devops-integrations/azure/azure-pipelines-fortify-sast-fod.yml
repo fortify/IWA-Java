@@ -1,0 +1,39 @@
+# Integrate Fortify on Demand Static AppSec Testing (SAST) into your Azure DevOps  pipeline
+# The following service connection must be establish before using this job
+#   - FoD_AMS
+#
+# The following task parameter must be defined 
+#   - ReleaseId
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: Maven@3
+  inputs:
+    mavenPomFile: 'pom.xml'
+    publishJUnitResults: true
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.11'
+    mavenVersionOption: 'Default'
+    mavenOptions: '-Xmx3072m'
+    mavenAuthenticateFeed: false
+    effectivePomSkip: false
+    sonarQubeRunAnalysis: false
+- task: FortifyOnDemandStatic@8
+  inputs:
+    FortifyProjects: '$(Build.Repository.LocalPath)'
+    FodConnection: 'FoD_AMS'    # create Azure DevOps Service connection with name FoD_AMS
+    ReleaseOptions: '0'
+    ReleaseId: 00000            # update FoD RELEASE ID
+    EntitlementSelection: '1'
+    EntitlementPreference: '2'
+    OverrideScanSettings: '2'
+    InProgressScanActionType: '0'
+    RemediationScanPreference: '2'
+    BuildType: 'mvn'
+    PolicyFailAction: '0'

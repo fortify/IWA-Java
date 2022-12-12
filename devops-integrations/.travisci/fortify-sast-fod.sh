@@ -1,26 +1,26 @@
 #!/bin/bash
-# Integrate Fortify on Demand Static AppSec Testing (SAST) into your AWS Codestar pipeline
+# Integrate Fortify on Demand Static AppSec Testing (SAST) into your Travis CI pipeline
 
 # *** Configuration ***
 
-# The following environment variables must be defined
+# The following environment variables must be defined in Repository settings
 fod_tenant=$FOD_TENANT 			# TENANT ID
-fod_user=$FOD_USER			# FOD USER KEY
-fod_pat=$FOD_PAT			# FOD PAT
-fod_release_id=$FOD_RELEASE_ID		# FOD APPLICATION BASED RELEASE ID
+fod_user=$FOD_USER				# FOD USER KEY
+fod_pat=$FOD_PAT				# FOD PAT
+fod_release_id=$FOD_RELEASE_ID	# FOD APPLICATION BASED RELEASE ID
 
 # Local variables (modify as needed)
 fod_url='https://ams.fortify.com'
 fod_api_url='https://api.ams.fortify.com/'
 fod_uploader_opts='-ep 2 -pp 0 -I 1 -apf'
-fod_notes="Triggered by AWS Codestar"
+fod_notes="Triggered by Travis CI"
 fod_uploader_version='v5.4.0'
 scancentral_client_version='22.1.2'
 fti_version='v2.14.0'
 fti_sha='d9ebd439c5b426a5ea207e6c1a17a466f79363ca5735fea1d7a4d8ef5807dc06'
 
 # Local variables (DO NOT MODIFY)
-fortify_tools_dir="/root/.fortify/tools/FoDUploader/$fod_uploader_version"		
+fortify_tools_dir="/home/travis/.fortify/tools/FoDUploader/$fod_uploader_version"		
 fti_install='FortifyToolsInstaller.sh'
 fod_util='FoDUpload.jar'
 
