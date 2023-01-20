@@ -18,11 +18,6 @@ on:
   push:
     branches: [ "main" ]
 
-env:
-  AWS_REGION: US_WEST_2
-  AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE
-  AWS_SECRET_ACCESS_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-
 jobs:
   FoD-SAST-Scan:
     # Use the appropriate runner for building your source code.
@@ -36,14 +31,6 @@ jobs:
       # Check out source code
       - name: Check Out Source Code
         uses: actions/checkout@v3
-
-      # Log message when PR title starts with "security"
-      - name: Check PR title
-        run: |
-          title="${{ github.event.pull_request.title }}"
-          if [[ $title =~ ^security ]]; then
-          echo "PR title starts with 'security'"
-          fi  
 
       # Java is required to run the various Fortify utilities. When scanning a Java application, please use the appropriate Java version for building your application.
       - name: Setup Java
