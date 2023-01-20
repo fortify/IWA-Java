@@ -1,0 +1,27 @@
+name: Insecure GitHub Action Workflow
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+env:
+  AWS_REGION: US_WEST_2
+  AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE
+  AWS_SECRET_ACCESS_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+jobs:
+  Insecure-Job:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      # Log message when PR title starts with "security"
+      - name: Check PR title
+        run: |
+          title="${{ github.event.pull_request.title }}"
+          if [[ $title =~ ^security ]]; then
+          echo "PR title starts with 'security'"
+          fi  
