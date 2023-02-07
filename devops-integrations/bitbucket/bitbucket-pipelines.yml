@@ -1,0 +1,36 @@
+#  Template maven-build
+
+#  This template allows you to test and build IWA Java app.
+# Integrate Fortify on Demand Static AppSec Testing (SAST) into your TeamCity build pipeline
+# The following environment variables must be defined in Project/Agent settings before using this job
+#   - $FOD_RELEASE_ID
+#   - $FOD_USER
+#   - $FOD_PAT
+#   - $FOD_TENANT
+
+image: maven:3.6.3
+
+pipelines:
+  default:
+    - parallel:
+      - step:
+          name: Build and Test
+          caches:
+            - maven
+          script:
+            - mvn -B verify --file pom.xml
+          after-script:
+              # Collect checkstyle results, if any, and convert to Bitbucket Code Insights.
+            - pipe: atlassian/checkstyle-report:0.3.0
+      - step:
+          name: Fortify On Demand Scan
+          script:
+            - pipe: fortifysoftware/fortify-scan:3.2.9-jdk-11
+              variables:
+                PACKAGE_OPTS: -bt mvn
+                FOD_URL: https://ams.fortify.com
+                FOD_TENANT: $FOD_TENANT
+                FOD_USER: $FOD_USER
+                FOD_PAT: $FOD_PAT
+                FOD_RELEASE_ID: $FOD_RELEASE_ID
+                FOD_UPLOAD_OPTS: -ep 2 -pp 0
