@@ -7,7 +7,7 @@
 #   - $_FCLI_DEFAULT_SSC_PASSWORD
 #   - $_FCLI_DEFAULT_SSC_URL
 #   - $_SSC_APP_VERSION_ID
-#   - $_SC_DAST_CICD_IDENTIFIED
+#   - $_SC_DAST_CICD_IDENTIFIER
 
 trigger:
 - none
@@ -50,7 +50,7 @@ stages:
           FCLI_DEFAULT_SSC_PASSWORD: $(_FCLI_DEFAULT_SSC_PASSWORD)
           FCLI_DEFAULT_SSC_URL: $(_FCLI_DEFAULT_SSC_URL)
           SSC_APP_VERSION_ID: $(_SSC_APP_VERSION_ID)
-          SC_DAST_CICD_IDENTIFIED: $(_SC_DAST_CICD_IDENTIFIED)
+          SC_DAST_CICD_IDENTIFIER: $(_SC_DAST_CICD_IDENTIFIER)
           SC_DAST_SCAN_NAME: IWA_DAST_AZURE
       steps:
       - script: |
@@ -58,14 +58,14 @@ stages:
           fcli ssc session login --insecure
           fcli sc-dast session login --insecure
 
-          fcli sc-dast scan start $SC_DAST_SCAN_NAME --settings $SC_DAST_CICD_IDENTIFIED --store '?'
+          fcli sc-dast scan start $SC_DAST_SCAN_NAME --settings $SC_DAST_CICD_IDENTIFIER --store '?'
           
           #DAST Scans usually takes longer, please uncomment accordingly
           #fcli sc-dast scan wait-for '?' --interval=30s
           #fcli ssc appversion-vuln count --appversion=$SSC_APP_VERSION_ID
 
           echo Terminating connection with Fortify Platform
-          fcli sc-sast session logout
+          fcli sc-dast session logout
           fcli ssc session logout
         displayName: Scan Central Scan
         enabled: true
