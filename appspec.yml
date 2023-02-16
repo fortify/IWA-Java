@@ -27,8 +27,8 @@ hooks:
     timeout: 300
     runas: root
   ValidateService:
-  - location: devops-integrations/aws/fortify_dast_scancentral.sh
-    timeout: 300
+  - location: devops-integrations/aws/fortify_dast_scancentral.bash
+    timeout: 500
     runas: root  
   ApplicationStop:
   - location: scripts/stop_server
