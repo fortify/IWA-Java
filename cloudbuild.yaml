@@ -1,4 +1,5 @@
-# Integrate Fortify on Demand Static AppSec Testing (SAST) into your Google Cloud Build pipeline
+# Integrate Fortify ScanCentral Static AppSec Testing (SAST) into your Google Cloud Build pipeline
+# Please refer to \devops-integrations\gcp\cloudbuild_fortify_sast_fod.yaml to integrate this build with Fortify On Demand
 # The following Google Cloud Build Secrets must be defined before using this job
 #   - $$FCLI_DEFAULT_SC_SAST_CLIENT_AUTH_TOKEN
 #   - $$FCLI_DEFAULT_SSC_USER
