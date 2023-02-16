@@ -1,0 +1,37 @@
+version: 0.0
+os: linux
+files:
+- source: target/iwa.war
+  destination: /home/ec2-user/javaapp
+- source: /scripts/requirements.txt
+  destination: /home/ec2-user/scripts
+hooks:
+  AfterInstall:
+  - location: scripts/install_python3
+    timeout: 300
+    runas: root
+  - location: scripts/codestar_remote_access
+    timeout: 300
+    runas: root
+  - location: scripts/install_java
+    timeout: 300
+    runas: root
+  - location: scripts/install_tomcat
+    timeout: 300
+    runas: root
+  - location: scripts/install_httpd
+    timeout: 300
+    runas: root
+  ApplicationStart:
+  - location: scripts/start_server
+    timeout: 300
+    runas: root
+  ValidateService:
+  - location: devops-integrations/aws/fortify_dast_scancentral.bash
+    timeout: 500
+    runas: root  
+  ApplicationStop:
+  - location: scripts/stop_server
+    timeout: 300
+    runas: root
+

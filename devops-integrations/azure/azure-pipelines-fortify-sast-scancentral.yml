@@ -1,0 +1,64 @@
+# Integrate Fortify ScanCentral Static AppSec Testing (SAST) into your Azure DevOps pipeline
+# The following pipeline variables must be defined before using SAST stage
+#   - $_FCLI_DEFAULT_SC_SAST_CLIENT_AUTH_TOKEN
+#   - $_FCLI_DEFAULT_SSC_USER
+#   - $_FCLI_DEFAULT_SSC_PASSWORD
+#   - $_FCLI_DEFAULT_SSC_CI_TOKEN
+#   - $_FCLI_DEFAULT_SSC_URL
+#   - $_SSC_APP_VERSION_ID
+
+trigger:
+- none
+stages:
+- stage: Build
+  jobs:
+    - job: Build
+      displayName: Building IWA Project
+      pool:
+        vmImage: ubuntu-latest
+      steps:
+      - task: Maven@3
+        inputs:
+          mavenPomFile: 'pom.xml'
+          mavenOptions: '-Xmx3072m'
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: '1.11'
+          jdkArchitectureOption: 'x64'
+          publishJUnitResults: true
+          testResultsFiles: '**/surefire-reports/TEST-*.xml'
+          goals: 'package'
+    - job: SAST
+      displayName: Fortify SAST
+      dependsOn:
+       - Build
+      pool:
+       vmImage: 'ubuntu-latest'
+      container:
+        image: fortifydocker/fortify-ci-tools:latest
+        env:
+          FCLI_DEFAULT_SC_SAST_CLIENT_AUTH_TOKEN: $(_FCLI_DEFAULT_SC_SAST_CLIENT_AUTH_TOKEN)
+          FCLI_DEFAULT_SSC_USER: $(_FCLI_DEFAULT_SSC_USER)
+          FCLI_DEFAULT_SSC_PASSWORD: $(_FCLI_DEFAULT_SSC_PASSWORD)
+          FCLI_DEFAULT_SSC_CI_TOKEN: $(_FCLI_DEFAULT_SSC_CI_TOKEN)
+          FCLI_DEFAULT_SSC_URL: $(_FCLI_DEFAULT_SSC_URL)
+          SSC_APP_VERSION_ID: $(_SSC_APP_VERSION_ID)
+          SC_SAST_SENSOR_VERSION: 22.2
+      steps:
+      - script: |
+          echo Setting connection with Fortify Platform
+          
+          fcli ssc session login --insecure
+          fcli sc-sast session login --insecure
+          
+          scancentral package -bt mvn -o package.zip
+          
+          fcli sc-sast scan start --appversion=$SSC_APP_VERSION_ID --upload --sensor-version=$SC_SAST_SENSOR_VERSION --package-file=package.zip --store='?'
+          fcli sc-sast scan wait-for '?' --interval=30s
+
+          fcli ssc appversion-vuln count --appversion=$SSC_APP_VERSION_ID
+
+          echo Terminating connection with Fortify Platform
+          fcli sc-sast session logout
+          fcli ssc session logout  
+        displayName: Scan Central Scan
+        continueOnError: false

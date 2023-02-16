@@ -1,10 +1,20 @@
 version: 0.2
 env:
   parameter-store:
+      ###############################################################
+      #          INTEGRATE FORTIFY ON DEMAND                        #
         FOD_RELEASE_ID: "/fod/releaseid"
         FOD_TENANT: "/fod/tenant"
         FOD_USER: "/fod/user"
-        FOD_PAT: "/fod/pat"
+        FOD_PAT: "/fod/pat"  
+      ###############################################################
+      #           INTEGRATE FORTIFY SCANCENTRAL                     #
+        FCLI_DEFAULT_SC_SAST_CLIENT_AUTH_TOKEN: "/fortify/client_auth_token"
+        FCLI_DEFAULT_SSC_USER: "/fortify/ssc_user"
+        FCLI_DEFAULT_SSC_PASSWORD: "/fortify/ssc_password"
+        FCLI_DEFAULT_SSC_CI_TOKEN: "/fortify/ci_token"
+        FCLI_DEFAULT_SSC_URL: "/fortify/ssc_url"
+        SSC_APP_VERSION_ID: "/fortify/ssc_app_versionid"
 phases:
   install:
     runtime-versions:
@@ -18,7 +28,6 @@ phases:
   build:
     commands:
       - mvn -Pwar clean package
-      #- mvn package
   post_build:
     commands:
       # Do not remove this statement. This command is required for AWS CodeStar projects.
@@ -28,17 +37,18 @@ phases:
       #                 INTEGRATE FORTIFY SAST                      #
       #                                                             #
       # For FORTIFY ON DEMAND uncomment the next line               #
-      - bash devops-integrations/aws/fortify-sast-fod.bash
+      #- bash devops-integrations/aws/fortify-sast-fod.bash
       #                                                             #
       # For FORTIFY SCANCENTRAL uncomment the next line             #
-      #- bash devops-integrations/aws/fortify_sast_scancentral.bash             
+      - bash devops-integrations/aws/fortify_sast_scancentral.bash             
       #                                                             #
       #                                                             #
-      ###############################################################      
+      ###############################################################            
 artifacts:
   files:
     - 'appspec.yml'
     - 'template.yml'
     - 'scripts/*'
+    - 'devops-integrations/aws/*'
     - 'target/iwa.war'
     - 'template-configuration.json'

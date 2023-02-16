@@ -1,0 +1,72 @@
+# Integrate Fortify ScanCentral Static AppSec Testing (DAST) into your Azure DevOps pipeline
+# This pipeline deploys to Azure App Service which requires below to be setup:
+#   - azureSubscription connection with Azure Pipeline
+#   - WebApp needs to be created with Azure Subscription
+# The following pipeline variables must be defined before using SAST stage
+#   - $_FCLI_DEFAULT_SSC_USER
+#   - $_FCLI_DEFAULT_SSC_PASSWORD
+#   - $_FCLI_DEFAULT_SSC_URL
+#   - $_SSC_APP_VERSION_ID
+#   - $_SC_DAST_CICD_IDENTIFIER
+
+trigger:
+- none
+stages:
+- stage: Build
+  jobs:
+    - job: Deploy
+      displayName: Deploy to Azure App Service
+      pool:
+       vmImage: Ubuntu-latest
+      steps:
+      - task: DownloadBuildArtifacts@0
+        inputs:
+          buildType: 'current'
+          downloadType: 'specific'
+          downloadPath: '$(System.ArtifactsDirectory)'
+
+      - task: AzureRmWebAppDeployment@4
+        displayName: 'Deploy War to Azure App Service'
+        enabled: false
+        env:
+          AZURE_SUBSCRIPTION_ID: $(_AZURE_SUBSCRIPTION_ID)
+        inputs:
+          ConnectionType: 'AzureRM'
+          azureSubscription: 'XXXXXXX'
+          appType: 'webAppLinux'
+          WebAppName: 'IWAJava'
+          packageForLinux: '$(System.ArtifactsDirectory)/**/iwa.war'
+          RuntimeStack: 'TOMCAT|9.0-java11'
+    - job: DAST
+      displayName: Fortify DAST
+      dependsOn:
+       - Deploy
+      pool:
+       vmImage: 'ubuntu-latest'
+      container:
+        image: fortifydocker/fortify-ci-tools:latest
+        env:
+          FCLI_DEFAULT_SSC_USER: $(_FCLI_DEFAULT_SSC_USER)
+          FCLI_DEFAULT_SSC_PASSWORD: $(_FCLI_DEFAULT_SSC_PASSWORD)
+          FCLI_DEFAULT_SSC_URL: $(_FCLI_DEFAULT_SSC_URL)
+          SSC_APP_VERSION_ID: $(_SSC_APP_VERSION_ID)
+          SC_DAST_CICD_IDENTIFIER: $(_SC_DAST_CICD_IDENTIFIER)
+          SC_DAST_SCAN_NAME: IWA_DAST_AZURE
+      steps:
+      - script: |
+          echo Setting connection with Fortify Platform
+          fcli ssc session login --insecure
+          fcli sc-dast session login --insecure
+
+          fcli sc-dast scan start $SC_DAST_SCAN_NAME --settings $SC_DAST_CICD_IDENTIFIER --store '?'
+          
+          #DAST Scans usually takes longer, please uncomment accordingly
+          #fcli sc-dast scan wait-for '?' --interval=30s
+          #fcli ssc appversion-vuln count --appversion=$SSC_APP_VERSION_ID
+
+          echo Terminating connection with Fortify Platform
+          fcli sc-dast session logout
+          fcli ssc session logout
+        displayName: Scan Central Scan
+        enabled: true
+        continueOnError: false
