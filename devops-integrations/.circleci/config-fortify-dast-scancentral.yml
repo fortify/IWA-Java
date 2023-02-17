@@ -1,0 +1,53 @@
+# Integrate Fortify ScanCentral Dynamic AppSec Testing (DAST) into your Circle CI  pipeline
+# Renaming this file to config.yml for leveraging the file directly otherwise copy dast job content
+# The following environment variables must be defined in CircleCI organization context before using this job
+#   - $FCLI_DEFAULT_SSC_USER
+#   - $FCLI_DEFAULT_SSC_PASSWORD
+#   - $FCLI_DEFAULT_SSC_CI_TOKEN
+#   - $FCLI_DEFAULT_SSC_URL
+#   - $SSC_APP_VERSION_ID
+version: '2.1'
+jobs:
+  deploy:
+    docker:
+      - image: 'tuffacton/jfrog-cli:latest'
+    steps:
+      - checkout
+      - run: 
+          command: |
+            jf config add --url=$ARTIFACTORY_URL --user=$ARTIFACTORY_USER --password=$ARTIFACTORY_API_KEY --interactive=false
+            jf rt u "(*).jar" example-repo-local/circleci/ --recursive=false
+
+  dast:
+    environment:
+      SC_DAST_SCAN_NAME: "Circle_CI_Scan"
+      SC_DAST_CICD_IDENTIFIER: "<<NNNNNNNNNNNNNNNN>>"
+    working_directory: ~/circleci-iwajava-scancentral
+    docker:
+      - image: fortifydocker/fortify-ci-tools:3.14.0-jdk-11
+
+    steps:
+      - checkout
+
+      - run: 
+          command: |
+            echo Setting connection with Fortify Platform
+            #Use --insecure switch when SSL certificates are self-generated
+            fcli ssc session login
+            fcli sc-dast session login
+          
+            fcli sc-dast scan start $SC_DAST_SCAN_NAME --settings $SC_DAST_CICD_IDENTIFIER
+
+            echo Terminating connection with Fortify Platform
+            fcli sc-dast session logout
+            fcli ssc session logout
+
+# Orchestrate job run sequence
+workflows:
+  CI_and_CD:
+    jobs:
+      - deploy: 
+      - dast: 
+          context: ScanCentral
+          requires:
+            - deploy

@@ -1,4 +1,5 @@
 # Integrate Fortify on Demand Static AppSec Testing (SAST) into your Circle CI  pipeline
+# Renaming this file to config.yml for leveraging the file directly otherwise copy scan job content
 # The following environment variables must be defined in CircleCI context before using this job
 #   - $FOD_RELEASE_ID
 #   - $FOD_USER

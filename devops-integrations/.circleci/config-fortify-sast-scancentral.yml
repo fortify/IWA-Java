@@ -1,0 +1,72 @@
+# Integrate Fortify ScanCentral Static AppSec Testing (SAST) into your Circle CI  pipeline
+# Rename this file to config.yml for leveraging the file directly otherwise copy sast job content
+# The following environment variables must be defined in CircleCI organization context before using this job
+#   - $FCLI_DEFAULT_SC_SAST_CLIENT_AUTH_TOKEN
+#   - $FCLI_DEFAULT_SSC_USER
+#   - $FCLI_DEFAULT_SSC_PASSWORD
+#   - $FCLI_DEFAULT_SSC_CI_TOKEN
+#   - $FCLI_DEFAULT_SSC_URL
+#   - $SSC_APP_VERSION_ID
+version: '2.1'
+jobs:
+  build:
+    working_directory: ~/circleci-iwajava-scancentral
+    docker:
+      - image: maven:3.8.6-openjdk-11
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          key: circleci-iwajava-sc-{{ checksum "pom.xml" }}
+
+      - run: mvn package
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: circleci-iwajava-sc-{{ checksum "pom.xml" }}
+
+      - store_test_results:
+          path: target/surefire-reports
+
+      - store_artifacts:
+          path: target/iwa.jar
+          
+  sast:
+    environment:
+      SSC_APP_VERSION_ID: "<<$$$$>>"
+      SC_SAST_SENSOR_VERSION: "22.2"
+    working_directory: ~/circleci-iwajava-scancentral
+    docker:
+      - image: fortifydocker/fortify-ci-tools:3.14.0-jdk-11
+
+    steps:
+      - checkout
+
+      - run: 
+          command: |
+            echo Setting connection with Fortify Platform
+            #Use --insecure switch if the SSL certificate is self generated.
+            fcli ssc session login
+            fcli sc-sast session login
+          
+            scancentral package -bt mvn -o package.zip
+            fcli sc-sast scan start --appversion=$SSC_APP_VERSION_ID --upload --sensor-version=$SC_SAST_SENSOR_VERSION --package-file=package.zip --store='?'
+
+            fcli sc-sast scan wait-for '?' --interval=30s
+            fcli ssc appversion-vuln count --appversion=$SSC_APP_VERSION_ID
+
+            echo Terminating connection with Fortify Platform
+            fcli sc-sast session logout
+            fcli ssc session logout  
+
+# Orchestrate job run sequence
+workflows:
+  build_and_scan:
+    jobs:
+      - build
+      - sast:
+          context: ScanCentral
+          requires:
+            - build
