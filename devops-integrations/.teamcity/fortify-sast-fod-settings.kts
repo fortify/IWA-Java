@@ -14,6 +14,7 @@ shouldn't be changed and its package should be the same as the
 project's external id.
 
 Integrate Fortify on Demand Static AppSec Testing (SAST) into your TeamCity build pipeline
+ Rename this file to "settings.kts" before use
  The following environment variables must be defined in Project/Agent settings before using this job
    - env.FOD_RELEASE_ID
    - env.FOD_USER
