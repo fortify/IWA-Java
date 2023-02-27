@@ -1,6 +1,5 @@
-package _Self.buildTypes
-
 import jetbrains.buildServer.configs.kotlin.*
+import jetbrains.buildServer.configs.kotlin.buildFeatures.perfmon
 import jetbrains.buildServer.configs.kotlin.buildSteps.dockerCommand
 import jetbrains.buildServer.configs.kotlin.buildSteps.maven
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
@@ -22,17 +21,24 @@ Integrate Fortify on Demand Static AppSec Testing (SAST) into your TeamCity buil
    - env.FOD_TENANT
 */
 
-object DevBuild : BuildType({
-    name = "dev_build"
+version = "2022.10"
+
+project {
+
+    buildType(Build)
+}
+
+object Build : BuildType({
+    name = "Build"
 
     vcs {
-        root(HttpsGitlabComMforgIwaJavaTravisGit)
+        root(DslContext.settingsRoot)
     }
 
     steps {
         maven {
-            name = "build"
             goals = "clean package"
+            runnerArgs = "-Dmaven.test.failure.ignore=true"
         }
         dockerCommand {
             commandType = build {
@@ -59,7 +65,11 @@ object DevBuild : BuildType({
 
     triggers {
         vcs {
-            branchFilter = ""
+        }
+    }
+
+    features {
+        perfmon {
         }
     }
 })
