@@ -1,15 +1,15 @@
 #!/bin/bash
-# Integrate Fortify ScanCentral Static AppSec Testing (SAST) into your AWS Codestar pipeline
+# Integrate Fortify ScanCentral Static AppSec Testing (SAST) into your Travis CI pipeline
 
 # *** Configuration ***
 
-# The following environment variables must be defined
-export FCLI_DEFAULT_SC_SAST_CLIENT_AUTH_TOKEN=$FCLI_DEFAULT_SC_SAST_CLIENT_AUTH_TOKEN
-export FCLI_DEFAULT_SSC_USER=$FCLI_DEFAULT_SSC_USER
-export FCLI_DEFAULT_SSC_PASSWORD=$FCLI_DEFAULT_SSC_PASSWORD
-export FCLI_DEFAULT_SSC_CI_TOKEN=$FCLI_DEFAULT_SSC_CI_TOKEN
-export FCLI_DEFAULT_SSC_URL=$FCLI_DEFAULT_SSC_URL
-ssc_app_version_id=$SSC_APP_VERSION_ID
+# The following environment variables must be defined in Repository settings
+export FCLI_DEFAULT_SC_SAST_CLIENT_AUTH_TOKEN=$FCLI_DEFAULT_SC_SAST_CLIENT_AUTH_TOKEN	# SCANCENTRAL CLIENT AUTH TOKEN
+export FCLI_DEFAULT_SSC_USER=$FCLI_DEFAULT_SSC_USER										# SSC USER NAME
+export FCLI_DEFAULT_SSC_PASSWORD=$FCLI_DEFAULT_SSC_PASSWORD								# SSC PASSWORD
+export FCLI_DEFAULT_SSC_CI_TOKEN=$FCLI_DEFAULT_SSC_CI_TOKEN								# SSC CI TOKEN
+export FCLI_DEFAULT_SSC_URL=$FCLI_DEFAULT_SSC_URL										# SSC URL
+ssc_app_version_id=$SSC_APP_VERSION_ID													# SSC APPLICATION VERSION ID
 
 # Local variables (modify as needed)
 scancentral_client_version='22.2.0'
@@ -54,7 +54,7 @@ scancentral package -bt mvn -o package.zip
 
 fcli sc-sast scan start --appversion=$ssc_app_version_id --upload --sensor-version=$scancentral_client_version --package-file=package.zip --store='?'
 fcli sc-sast scan wait-for '?' --interval=30s
-fcli ssc appversion-vuln count --appversion=$SSC_APP_VERSION_ID
+fcli ssc appversion-vuln count --appversion=$ssc_app_version_id
 
 echo Terminating connection with Fortify Platform
 fcli sc-sast session logout

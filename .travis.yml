@@ -22,10 +22,10 @@ after_success:
   #                     INTEGRATE FORTIFY SAST                      #
   #                                                                 #
   # For FORTIFY ON DEMAND uncomment the next line                   #
-  - bash devops-integrations/.travisci/fortify-sast-fod.sh
+  #- bash devops-integrations/.travisci/fortify-sast-fod.sh
   #                                                                 #
   # For FORTIFY SCANCENTRAL uncomment the next line                 #
-  #- bash devops-integrations/.travisci/fortify_sast_scancentral.sh             
+  - bash devops-integrations/.travisci/fortify_sast_scancentral.sh             
   #                                                                 #
   #                                                                 #
   ################################################################### 
