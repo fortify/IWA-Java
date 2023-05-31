@@ -19,23 +19,20 @@
 
 package com.microfocus.example.utils;
 
-import java.security.Key;
-import java.util.Date;
-
 import com.microfocus.example.entity.CustomUserDetails;
 import com.microfocus.example.entity.User;
+import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
-import io.jsonwebtoken.*;
-
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.time.Instant;
+import java.util.Date;
 
 @Component
 public class JwtUtils {
@@ -44,10 +41,10 @@ public class JwtUtils {
     @Value("${app.jwt.secret}")
     private String jwtSecret;
 
-    @Value("${app.jwt.expiration-ms}")
+    @Value("#{new Integer(${app.jwt.expiration-ms:0})}")
     private int jwtExpirationMs;
 
-    @Value("${app.jwt.refresh-ms}")
+    @Value("#{new Integer(${app.jwt.refresh-ms:0})}")
     private int jwtRefreshMs;
 
     public String generateJwtToken(Authentication authentication) {
@@ -64,6 +61,16 @@ public class JwtUtils {
                 .compact();
     }
 
+    public String generateJwtTokenFromUsername(String username) {
+        log.debug("JwtUtils::generateJwtTokenFromUsername for: {}", username);
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .compact();
+    }
+
     public String refreshJwtToken(Authentication authentication) {
         CustomUserDetails userPrincipal = (CustomUserDetails) authentication.getPrincipal();
 
@@ -74,6 +81,10 @@ public class JwtUtils {
                 .setExpiration(new Date((new Date()).getTime() + jwtRefreshMs))
                 .signWith(SignatureAlgorithm.HS256, jwtSecret)
                 .compact();
+    }
+
+    public Instant getDefaultExpiration() {
+        return Instant.now().plusMillis(jwtRefreshMs);
     }
 
     public long getExpirationFromJwtToken(String token) {
