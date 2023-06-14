@@ -38,18 +38,10 @@ jobs:
         with:
           java-version: 11
           distribution: 'temurin'
-          
-      # Setup Maven 3.8
-      - name: Setup Maven
-        uses: stCarolas/setup-maven@v4.5
-        with:
-          maven-version: 3.8.2
 
       # Prepare source+dependencies for upload.  ScanCentral Client documentation is located at https://www.microfocus.com/documentation/fortify-software-security-center/
       - name: Download Fortify ScanCentral Client
         uses: fortify/gha-setup-scancentral-client@v2
-        with:
-          version: 22.1.2
       - name: Package Code + Dependencies
         run: scancentral package $PACKAGE_OPTS -o package.zip
         env:
