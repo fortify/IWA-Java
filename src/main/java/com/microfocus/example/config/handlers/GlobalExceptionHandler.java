@@ -1,7 +1,7 @@
 /*
         Insecure Web App (IWA)
 
-        Copyright (C) 2020-2022 Micro Focus or one of its affiliates
+        Copyright 2020-2023 Open Text or one of its affiliates.
 
         This program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 
 package com.microfocus.example.config.handlers;
 
+import com.microfocus.example.exception.ApiBadCredentialsException;
+import com.microfocus.example.exception.ApiRefreshTokenException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +51,34 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     public static final String DEFAULT_ERROR_VIEW = "error/default";
     public static final String SERVER_ERROR_VIEW = "error/500-internal-error";
+
+    @ExceptionHandler(ApiBadCredentialsException.class)
+    public ResponseEntity<ApiStatusResponse> badCredentials(final ApiBadCredentialsException ex, final WebRequest request) {
+        log.debug("GlobalExceptionHandler::badCredentials");
+        ArrayList<String> errors = new ArrayList<>();
+        errors.add(ex.getLocalizedMessage());
+        final ApiStatusResponse apiStatusResponse = new ApiStatusResponse
+                .ApiResponseBuilder()
+                .withSuccess(false)
+                .atTime(LocalDateTime.now(ZoneOffset.UTC))
+                .withErrors(errors)
+                .build();
+        return new ResponseEntity<ApiStatusResponse>(apiStatusResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ApiRefreshTokenException.class)
+    public ResponseEntity<ApiStatusResponse> refreshToken(final ApiRefreshTokenException ex, final WebRequest request) {
+        log.debug("GlobalExceptionHandler::refreshToken");
+        ArrayList<String> errors = new ArrayList<>();
+        errors.add(ex.getLocalizedMessage());
+        final ApiStatusResponse apiStatusResponse = new ApiStatusResponse
+                .ApiResponseBuilder()
+                .withSuccess(false)
+                .atTime(LocalDateTime.now(ZoneOffset.UTC))
+                .withErrors(errors)
+                .build();
+        return new ResponseEntity<ApiStatusResponse>(apiStatusResponse, HttpStatus.NOT_FOUND);
+    }
 
     @ExceptionHandler(ServerErrorException.class)
     public ModelAndView handleServerErrorException(final ServerErrorException ex, final HttpServletRequest request) {

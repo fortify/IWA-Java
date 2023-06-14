@@ -1,7 +1,7 @@
 /*
         Insecure Web App (IWA)
 
-        Copyright (C) 2020-2022 Micro Focus or one of its affiliates
+        Copyright 2020-2023 Open Text or one of its affiliates.
 
         This program is free software: you can redistribute it and/or modify
         it under the terms of the GNU General Public License as published by
@@ -19,11 +19,8 @@
 
 package com.microfocus.example.config.handlers;
 
+import com.microfocus.example.exception.*;
 import com.microfocus.example.payload.response.ApiStatusResponse;
-import com.microfocus.example.exception.MessageNotFoundException;
-import com.microfocus.example.exception.ProductNotFoundException;
-import com.microfocus.example.exception.RoleNotFoundException;
-import com.microfocus.example.exception.UserNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.TypeMismatchException;
@@ -47,7 +44,6 @@ import org.springframework.web.multipart.support.MissingServletRequestPartExcept
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
@@ -63,6 +59,20 @@ public class GlobalRestExceptionHandler extends ResponseEntityExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalRestExceptionHandler.class);
 
     // Custom exception handlers
+
+    @ExceptionHandler(ApiBadCredentialsException.class)
+    public ResponseEntity<ApiStatusResponse> badCredentials(final ApiBadCredentialsException ex, final WebRequest request) {
+        log.debug("GlobalRestExceptionHandler::badCredentials");
+        ArrayList<String> errors = new ArrayList<>();
+        errors.add(ex.getLocalizedMessage());
+        final ApiStatusResponse apiStatusResponse = new ApiStatusResponse
+                .ApiResponseBuilder()
+                .withSuccess(false)
+                .atTime(LocalDateTime.now(ZoneOffset.UTC))
+                .withErrors(errors)
+                .build();
+        return new ResponseEntity<ApiStatusResponse>(apiStatusResponse, HttpStatus.NOT_FOUND);
+    }
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiStatusResponse> userNotFound(final UserNotFoundException ex, final WebRequest request) {

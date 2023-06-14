@@ -21,24 +21,27 @@ package com.microfocus.example.entity;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.microfocus.example.utils.JwtUtils;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Spring Security "Authority" entity
+ * A JWT refresh token.
+ *
  * @author Kevin A. Lee
  */
 @Entity
-@Table(name = "authorities")
+@Table(name = "refresh_tokens")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-public class Authority {
+public class RefreshToken implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    //@GeneratedValue(strategy = GenerationType.IDENTITY)
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(
             name = "UUID",
@@ -46,15 +49,17 @@ public class Authority {
     )
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
-    //private Integer id;
 
-    @Enumerated(EnumType.STRING)
-    private AuthorityType name;
+    @OneToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
 
-    public Authority() {}
+    @Column(name = "expiry_date", nullable = false)
+    private Instant expiryDate;
 
-    public Authority(AuthorityType name) {
-        this.name = name;
+    public RefreshToken() {
+        JwtUtils jwtUtils = new JwtUtils();
+        this.expiryDate = jwtUtils.getDefaultExpiration();
     }
 
     public UUID getId() {
@@ -65,19 +70,25 @@ public class Authority {
         this.id = id;
     }
 
-    public AuthorityType getName() {
-        return name;
+    public User getUser() {
+        return this.user;
     }
 
-    public void setName(AuthorityType name) {
-        this.name = name;
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Instant getExpiryDate() {
+        return this.expiryDate;
+    }
+
+    public void setExpiryDate(Instant expiryDate) {
+        this.expiryDate = expiryDate;
     }
 
     @Override
     public String toString() {
-        return "Authority{" +
-                "id=" + id +
-                ", name=" + name +
-                '}';
+        return "RefreshToken(" + id + " for: " + user.getUsername() + " expires on: " + expiryDate.toString() + ")";
     }
+
 }
