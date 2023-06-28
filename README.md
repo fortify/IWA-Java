@@ -65,7 +65,7 @@ docker build -t iwa -f Dockerfile.win .
 This image can then be executed using the following commands:
 
 ```
-docker run -d -p 8888:8888 iwa
+docker run -d -p 8888:8080 iwa
 ```
 
 ## Using the Application
