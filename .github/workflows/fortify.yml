@@ -15,6 +15,8 @@ name: Fortify on Demand Scan
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [ "main" ]
   push:
     branches: [ "main" ]
 
@@ -43,9 +45,7 @@ jobs:
       - name: Download Fortify ScanCentral Client
         uses: fortify/gha-setup-scancentral-client@v2
       - name: Package Code + Dependencies
-        run: scancentral package $PACKAGE_OPTS -o package.zip
-        env:
-          PACKAGE_OPTS: "-bt mvn -oss"
+        run: scancentral package -oss -o package.zip
 
       # Start Fortify on Demand SAST scan and wait until results complete. For more information on FoDUploader commands, see https://github.com/fod-dev/fod-uploader-java
       - name: Download Fortify on Demand Universal CI Tool
