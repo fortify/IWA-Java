@@ -11,7 +11,7 @@
 # assistance with configuration, feel free to create a help ticket in the Fortify on Demand portal.                                            #
 ################################################################################################################################################
 
-name: Fortify on Demand Scan
+name: Fortify AST Scan
 
 on:
   workflow_dispatch:
@@ -21,7 +21,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  FoD-SAST-Scan:
+  Fortify-AST-Scan:
     runs-on: ubuntu-latest
     permissions:
       actions: read
