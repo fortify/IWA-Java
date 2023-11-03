@@ -22,7 +22,6 @@ on:
 
 jobs:
   FoD-SAST-Scan:
-    # Use the appropriate runner for building your source code.
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -34,12 +33,12 @@ jobs:
       - name: Check Out Source Code
         uses: actions/checkout@v3
 
-      # Java is required to run the various Fortify utilities. When scanning a Java application, please use the appropriate Java version for building your application.
-      #- name: Setup Java
-      #  uses: actions/setup-java@v3
-      #  with:
-      #    java-version: 11
-      #    distribution: 'temurin'
+      # Java is required to run the various Fortify utilities. Ensuring proper version is installed on the runner.
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: 'temurin'
 
       # Perform Fortify on Demand SAST + SCA scan and import SAST results into GitHub code scanning alerts
       - name: Run FoD SAST Scan
@@ -51,8 +50,6 @@ jobs:
           FOD_TENANT: ${{secrets.FOD_TENANT}}
           FOD_USER: ${{secrets.FOD_USER}}
           FOD_PASSWORD: ${{secrets.FOD_PAT}}
-          # EXTRA_FOD_LOGIN_OPTS: --socket-timeout=60s
           FOD_RELEASE: ${{ secrets.FOD_RELEASE_ID }}
           EXTRA_PACKAGE_OPTS: -oss
-          # DO_WAIT: true
           DO_EXPORT: true
