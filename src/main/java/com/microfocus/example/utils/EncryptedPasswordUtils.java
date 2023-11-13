@@ -21,7 +21,6 @@ package com.microfocus.example.utils;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -38,16 +37,15 @@ import javax.crypto.spec.SecretKeySpec;
 public class EncryptedPasswordUtils {
 
 	private static final byte[] iv = { 22, 33, 11, 44, 55, 99, 66, 77 };
-	private static final SecretKey keySpec = new SecretKeySpec(iv, "DES");
+	private static final SecretKey keySpec = new SecretKeySpec(iv, "AES"); // Use AES instead of DES
 	
     public static String encryptPassword(String password) {
     	byte[] encrypted = null;
     	try {
-			Cipher desCipher = Cipher.getInstance("DES");
-			desCipher.init(Cipher.ENCRYPT_MODE, keySpec);
-			encrypted = desCipher.doFinal(password.getBytes()); 	
+			Cipher aesCipher = Cipher.getInstance("AES"); // Use AES instead of DES
+			aesCipher.init(Cipher.ENCRYPT_MODE, keySpec);
+			encrypted = aesCipher.doFinal(password.getBytes()); 	
 		} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
 		}
@@ -59,17 +57,15 @@ public class EncryptedPasswordUtils {
     	byte[] encrypted = null;
     	String encPassword1 = "";
     	try {
-			Cipher desCipher = Cipher.getInstance("DES");
-			desCipher.init(Cipher.ENCRYPT_MODE, keySpec);
-			encrypted = desCipher.doFinal(password1.getBytes());
+			Cipher aesCipher = Cipher.getInstance("AES"); // Use AES instead of DES
+			aesCipher.init(Cipher.ENCRYPT_MODE, keySpec);
+			encrypted = aesCipher.doFinal(password1.getBytes());
 			encPassword1 = new String(encrypted); 
 		} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return false;
 		}
     	
         return encPassword1.equals(password2);
     }
-
 }
