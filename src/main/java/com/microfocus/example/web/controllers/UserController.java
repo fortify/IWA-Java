@@ -54,6 +54,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+// Import additional classes
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
 
 import javax.validation.Valid;
 import java.io.BufferedReader;
@@ -575,31 +578,36 @@ public class UserController extends AbstractBaseController {
     
     @PostMapping("/files/xml/update")
     public String handleXMLUpdate(@RequestParam("filename") String fileName,
-    		@RequestParam("fcontent") String newXMLContent,
-            RedirectAttributes redirectAttributes) {
+                                  @RequestParam("fcontent") String newXMLContent,
+                                  RedirectAttributes redirectAttributes) {
 
         Path fpath = storageService.load(fileName);
-        
+
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         try {
-			dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, false);
-	        DocumentBuilder db = dbf.newDocumentBuilder();
-	        Document doc = db.parse(new InputSource(new StringReader(newXMLContent)));
-	        Path temp = Files.createTempFile("iwa", ".xml");
-	        try (FileOutputStream outStream = new FileOutputStream(temp.toString())) {
-	        	writeXml(doc, outStream);
-	        } catch (IOException | TransformerException e) {
-	        	e.printStackTrace();
-	        }
-	        
-	        storageService.store(temp, fpath.toString());
-	        Files.delete(temp);
-		} catch (ParserConfigurationException | IOException | SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	
-    	
+            // Fix 1: Set secure XML processing features to disallow external entities
+            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            
+            // Fix 2: Create a custom EntityResolver to disallow external entities
+            db.setEntityResolver((publicId, systemId) -> new InputSource(new StringReader("")));
+
+            Document doc = db.parse(new InputSource(new StringReader(newXMLContent)));
+            Path temp = Files.createTempFile("iwa", ".xml");
+            try (FileOutputStream outStream = new FileOutputStream(temp.toString())) {
+                writeXml(doc, outStream);
+            } catch (IOException | TransformerException e) {
+                e.printStackTrace();
+            }
+
+            storageService.store(temp, fpath.toString());
+            Files.delete(temp);
+        } catch (ParserConfigurationException | IOException | SAXException e) {
+            // Handle exceptions appropriately
+            e.printStackTrace();
+        }
+
         redirectAttributes.addFlashAttribute("message",
                 "Successfully updated " + fileName + "!");
 
