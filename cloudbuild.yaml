@@ -9,7 +9,7 @@
 #   - $$SSC_APP_VERSION_ID
 
 steps:
-- name: maven:3.6.0-jdk-11-slim
+- name: maven:3.9.7
   entrypoint: 'mvn'
   args: ['-q', 'clean', 'package', '-DskipTests']
 
@@ -17,7 +17,7 @@ steps:
   args: ['build', '-t', 'gcr.io/$PROJECT_ID/iwa_java:latest', '-t', 'gcr.io/$PROJECT_ID/iwa_java:$COMMIT_SHA', '-t', 'gcr.io/$PROJECT_ID/iwa_java:$BUILD_ID', '.']
   id: 'build-image-IWAJava'
 
-- name: 'fortifydocker/fortify-ci-tools:3.14.0-jdk-11'
+- name: 'fortifydocker/fortify-ci-tools:5.4.1-jdk-17'
   entrypoint: bash
   args: 
     - -c
@@ -27,10 +27,10 @@ steps:
        fcli sc-sast session login
           
        scancentral package -bt mvn -o package.zip
-       fcli sc-sast scan start --appversion=$$SSC_APP_VERSION_ID --upload --sensor-version=$$SC_SAST_SENSOR_VERSION --package-file=package.zip --store='?'
+       fcli sc-sast scan start --publish-to=$$SSC_APP_VERSION_ID --sensor-version=$$SC_SAST_SENSOR_VERSION --package-file=package.zip --store=Id
 
-       fcli sc-sast scan wait-for '?' --interval=30s
-       fcli ssc appversion-vuln count --appversion=$$SSC_APP_VERSION_ID
+       fcli sc-sast scan wait-for ::Id:: --interval=30s
+       fcli ssc issue count --appversion=$$SSC_APP_VERSION_ID
 
        echo Terminating connection with Fortify Platform
        fcli sc-sast session logout
@@ -39,7 +39,7 @@ steps:
   env:
     - 'FORTIFY_IP=${_PUBLIC_IP}'  
     - 'SSC_APP_VERSION_ID=${_SSC_APP_VERSION_ID}'
-    - 'SC_SAST_SENSOR_VERSION=22.2'
+    - 'SC_SAST_SENSOR_VERSION=24.2'
   id: 'fortify-static-scan'
   waitFor: ['build-image-IWAJava']
 
@@ -61,7 +61,7 @@ steps:
   - '--allow-unauthenticated'
   id: 'deploy-to-cloud-run'
   
-- name: 'fortifydocker/fortify-ci-tools:3.14.0-jdk-11'
+- name: 'fortifydocker/fortify-ci-tools:5.4.1-jdk-17'
   entrypoint: "bash"
   args:
           - "-c"
@@ -70,7 +70,7 @@ steps:
               fcli ssc session login
               fcli sc-dast session login
               
-              fcli sc-dast scan start $$SC_DAST_SCAN_NAME --settings $$SC_DAST_CICD_IDENTIFIER
+              fcli sc-dast scan start --name=$$SC_DAST_SCAN_NAME --settings=$$SC_DAST_CICD_IDENTIFIER
               
               echo Terminating connection with Fortify Platform
               fcli sc-dast session logout

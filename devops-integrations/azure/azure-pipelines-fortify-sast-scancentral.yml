@@ -35,6 +35,7 @@ stages:
        vmImage: 'ubuntu-latest'
       container:
         image: fortifydocker/fortify-ci-tools:5.4.1-jdk-17
+        options: "--add-host=<<SSC_FQDN_NAME>>:x.x.x.x"
         env:
           FCLI_DEFAULT_SC_SAST_CLIENT_AUTH_TOKEN: $(_FCLI_DEFAULT_SC_SAST_CLIENT_AUTH_TOKEN)
           FCLI_DEFAULT_SSC_USER: $(_FCLI_DEFAULT_SSC_USER)
@@ -43,7 +44,6 @@ stages:
           FCLI_DEFAULT_SSC_URL: $(_FCLI_DEFAULT_SSC_URL)
           SSC_APP_VERSION_ID: $(_SSC_APP_VERSION_ID)
           SC_SAST_SENSOR_VERSION: 24.2
-          FORTIFY_SSC_IP: x.x.x.x
       steps:
       - script: |
           echo Setting connection with Fortify Platform

@@ -27,7 +27,7 @@ steps:
   - '--allow-unauthenticated'
   id: 'deploy-to-cloud-run'
   
-- name: 'fortifydocker/fortify-ci-tools:3.14.0-jdk-11'
+- name: 'fortifydocker/fortify-ci-tools:5.4.1-jdk-17'
   entrypoint: "bash"
   args:
           - "-c"
@@ -36,7 +36,7 @@ steps:
               fcli ssc session login
               fcli sc-dast session login
               
-              fcli sc-dast scan start $$SC_DAST_SCAN_NAME --settings $$SC_DAST_CICD_IDENTIFIER
+              fcli sc-dast scan start --name=$$SC_DAST_SCAN_NAME --settings=$$SC_DAST_CICD_IDENTIFIER
               
               echo Terminating connection with Fortify Platform
               fcli sc-dast session logout

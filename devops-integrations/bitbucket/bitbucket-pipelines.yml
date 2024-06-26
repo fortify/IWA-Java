@@ -8,7 +8,7 @@
 #   - $FOD_PAT
 #   - $FOD_TENANT
 
-image: maven:3.6.3
+image: maven:3.9.7
 
 pipelines:
   default:
@@ -25,7 +25,7 @@ pipelines:
       - step:
           name: Fortify On Demand Scan
           script:
-            - pipe: fortifysoftware/fortify-scan:3.2.9-jdk-11
+            - pipe: fortifysoftware/fortify-scan:5.4.1-jdk-17
               variables:
                 PACKAGE_OPTS: -bt mvn
                 FOD_URL: https://ams.fortify.com
