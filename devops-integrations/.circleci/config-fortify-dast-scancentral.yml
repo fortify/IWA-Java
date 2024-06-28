@@ -5,7 +5,7 @@
 #   - $FCLI_DEFAULT_SSC_PASSWORD
 #   - $FCLI_DEFAULT_SSC_CI_TOKEN
 #   - $FCLI_DEFAULT_SSC_URL
-#   - $SSC_APP_VERSION_ID
+#   - $SC_DAST_CICD_IDENTIFIER
 version: '2.1'
 jobs:
   deploy:
@@ -15,6 +15,7 @@ jobs:
       - checkout
       - run: 
           command: |
+            echo Deploying artifacts
             jf config add --url=$ARTIFACTORY_URL --user=$ARTIFACTORY_USER --password=$ARTIFACTORY_API_KEY --interactive=false
             jf rt u "(*).jar" example-repo-local/circleci/ --recursive=false
 
@@ -24,7 +25,7 @@ jobs:
       SC_DAST_CICD_IDENTIFIER: "<<NNNNNNNNNNNNNNNN>>"
     working_directory: ~/circleci-iwajava-scancentral
     docker:
-      - image: fortifydocker/fortify-ci-tools:3.14.0-jdk-11
+      - image: fortifydocker/fortify-ci-tools:5.4.1-jdk-17
 
     steps:
       - checkout
@@ -35,8 +36,8 @@ jobs:
             #Use --insecure switch when SSL certificates are self-generated
             fcli ssc session login
             fcli sc-dast session login
-          
-            fcli sc-dast scan start $SC_DAST_SCAN_NAME --settings $SC_DAST_CICD_IDENTIFIER
+            
+            fcli sc-dast scan start --name=$SC_DAST_SCAN_NAME --settings=$SC_DAST_CICD_IDENTIFIER
 
             echo Terminating connection with Fortify Platform
             fcli sc-dast session logout
