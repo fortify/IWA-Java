@@ -1,0 +1,97 @@
+################################################################################################################################################
+#                                                                                                                                              #
+# Template de Github Actions: Stack de Segurança de Aplicações com Remediação Automatizada                                                     #
+# Autoria:                                                                                                                                     #
+# Emerson Xavier - emerson.xavier@keeggo.com                                                                                                   #
+# Michel Santana - michel.santana@keeggo.com                                                                                                   #
+#                                                                                                                                              #
+# Stack de Ferramentas de App Sec:                                                                                                             #
+# - OpenText Debricked: Software Composition Analysis                                                                                          #
+# - OpenText Fortify:   Static Analysis Security Testing                                                                                       #
+# - Mobb Fixer:         AI Security Code Assistant                                                                                             #
+#                                                                                                                                              #
+################################################################################################################################################
+
+name: Debricked + Fortify + Mobb
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ "main" ]
+#  push:
+#    branches: [ "main" ]
+
+jobs:
+  Scan-and-Fix:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    env:
+      App-Version: 'IWA:java'
+
+    steps:
+      # Check out source code
+      - name: Check Out Source Code
+        uses: actions/checkout@v4
+
+      # Java is required to run the various Fortify utilities. Ensuring proper version is installed on the runner.
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      # Fortify environment setup with FCLI
+      - name: Install FCLI and Debricked CLI
+        uses: fortify/github-action/setup@v1
+        with:
+          tool-definitions: https://github.com/fortify/tool-definitions/releases/download/v1/tool-definitions.yaml.zip
+          export-path: true
+          fcli: latest
+          sc-client: 23.2
+          fod-uploader: skip
+          vuln-exporter: skip
+          bugtracker-utility: skip
+          debricked-cli: latest
+
+      # Perform Fortify SAST scan and import SAST results into GitHub code scanning alerts
+      - name: SAST Scan (Fortify)
+        run: |
+          fcli ssc session login --url=${{ secrets.SSC_URL }} --ci-token=${{ secrets.SSC_TOKEN }}
+          fcli sc-sast session login --client-auth-token=${{ secrets.CLIENT_AUTH_TOKEN }} --ssc-url=${{ secrets.SSC_URL }} --ssc-ci-token=${{ secrets.SSC_TOKEN }}
+          scancentral package --output APP.zip
+          fcli sc-sast scan start --package-file=APP.zip --sensor-version=24.2 --publish-to=${{ env.App-Version  }} --ssc-ci-token=${{ secrets.SSC_TOKEN }} --store=job:jobToken
+
+      # Perform Debricked SCA scan and import results into Fortify
+      - name: SCA Scan (Debricked)
+        run: |
+          debricked scan --access-token=${{ secrets.DEBRICKED_TOKEN }} --repository=${{ env.App-Version  }} --commit=${{ env.GITHUB_RUN_ID }}
+          fcli ssc artifact import-debricked --debricked-access-token=${{ secrets.DEBRICKED_TOKEN }} --appversion=${{ env.App-Version  }} --repository=${{ env.App-Version  }} --branch=$GITHUB_REF_NAME
+
+      # Wait for Fortify SAST scan to upload results to AI Security Assistant
+      - name: Waiting for SAST Results
+        run: |
+         fcli sc-sast scan wait-for --any-ssc-state=PROCESS_COMPLETE --timeout=2h ::job::jobToken
+         fcli ssc appversion refresh-metrics ${{ env.App-Version  }}
+         fcli ssc issue count --appversion=${{ env.App-Version  }} --by="Fortify Priority Order"
+         fcli ssc appversion download-state --include-sources --file='results.fpr' ${{ env.App-Version  }}
+
+      # Upload Fortify SAST results
+      - name: Upload SAST results to Mobb
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: fpr
+          path: results.fpr
+          
+      # Mobb Fixer execution
+      - name: Run Mobb on the findings and get fixes
+        if: always()
+        uses: mobb-dev/action/review@v1.1
+        with:
+          report-file: "results.fpr"
+          api-key: ${{ secrets.MOBB_API_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN }}
+          scanner: fortify
