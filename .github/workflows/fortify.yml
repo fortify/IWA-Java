@@ -56,3 +56,4 @@ jobs:
           DO_SETUP: true
           DO_JOB_SUMMARY: true
           DO_PR_COMMENT: true
+          SETUP_EXTRA_OPTS: --sdlc-status QA --scan-types sast
