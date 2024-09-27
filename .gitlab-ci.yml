@@ -1,34 +1,51 @@
+# Comment/Uncomment the below depending on whether you are using Fortify on Demand
+# or ScanCentral SAST/DAST. 
 include:
-  - local: '/devops-integrations/gitlab/debricked-sca.yml'
-  - local: '/devops-integrations/gitlab/fortify-sast-scancentral.yml'
-  - local: '/devops-integrations/gitlab/fortify-dast-scancentral.yml'
-  #- local: '/devops-integrations/gitlab/fortify-sast-fod.yml'
-  
+  #- local: '/devops-integrations/gitlab/debricked-sca.yml'
+  #- local: '/devops-integrations/gitlab/fortify-sca.yml'
+  #- local: '/devops-integrations/gitlab/fortify-sast-scancentral.yml'
+  #- local: '/devops-integrations/gitlab/fortify-dast-api-scancentral.yml'
+  #- local: '/devops-integrations/gitlab/fortify-dast-web-scancentral.yml'
+  - local: '/devops-integrations/gitlab/fortify-sast-fod.yml'
+  - local: '/devops-integrations/gitlab/fortify-dast-fod.yml'
+  #- local: '/devops-integrations/gitlab/fortify-ssc-gate.yml'
+  - local: '/devops-integrations/gitlab/fortify-fod-gate.yml'
+
 stages:
   - build
   - deploy
   - test
+  - dast
+  - report
 
 build:
   stage: build
-  image: maven:3.8.6-eclipse-temurin-8
+  image: maven:3.9-eclipse-temurin-11
 
-  script: 
+  script:
     - echo Building project...
-    - mvn -Pjar clean package
+    - mvn -Dskip.unit.tests=false -DfailIfNoTests=false -Dtest="*,!PasswordConstraintValidatorTest,!UserServiceTest,!DefaultControllerTest" -P jar -B verify package --file pom.xml
     - mvn dependency:tree
         -DoutputFile=.debricked-maven-dependencies.tgf
         -DoutputType=tgf
-  when: manual
+  #when: manual
   artifacts:
     paths:
-    - .debricked-maven-dependencies.tgf
-    - /
+      - .debricked-maven-dependencies.tgf
+      - target/surefire-reports/TEST-*.xml
     expire_in: 3 days
-    when: on_success
+    reports:
+      junit: target/surefire-reports/TEST-*.xml
+    when: always
 
 deploy:
   stage: deploy
   needs: [build]
   script:
     - echo 'Simulating deployment of application...'
+
+functional-test:
+  stage: test
+  needs: [deploy]
+  script:
+    - echo 'Simulating functional test of application...'
