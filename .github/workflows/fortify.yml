@@ -55,6 +55,6 @@ jobs:
           DO_EXPORT: true
           DO_SETUP: true
           DO_JOB_SUMMARY: true
-          #DO_PR_COMMENT: true
-          #DO_POLICY_CHECK: true
+          DO_PR_COMMENT: true
+          DO_POLICY_CHECK: true
           SETUP_EXTRA_OPTS: --sdlc-status Development --scan-types sast
