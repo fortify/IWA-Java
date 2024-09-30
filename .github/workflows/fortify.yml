@@ -23,10 +23,6 @@ on:
 jobs:
   Fortify-AST-Scan:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      # Prevent running multiple FoD scans on same release simultaneously
-      max-parallel: 1
     permissions:
       actions: read
       contents: read
