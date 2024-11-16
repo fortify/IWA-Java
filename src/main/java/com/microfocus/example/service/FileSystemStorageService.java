@@ -51,7 +51,7 @@ public class FileSystemStorageService implements StorageService {
                 throw new StorageException("Failed to store empty file.");
             }
             String sanitizedFilename = file.getOriginalFilename().replaceAll("\\.\\./", "");
-            Path destinationFile = this.rootLocation.resolve(sanitizedFilename)
+            Path destinationFile = this.rootLocation.resolve(sanitizedFilename);
             if (!destinationFile.getParent().equals(this.rootLocation.toAbsolutePath())) {
                 // This is a security check
                 throw new StorageException(
