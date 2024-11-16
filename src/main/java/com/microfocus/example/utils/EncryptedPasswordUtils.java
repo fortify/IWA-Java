@@ -59,8 +59,8 @@ public class EncryptedPasswordUtils {
     	byte[] encrypted = null;
     	String encPassword1 = "";
     	try {
-			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            SecretKeySpec secretKey = new SecretKeySpec(iv, "AES");
+			Cipher desCipher = Cipher.getInstance("DES");
+			desCipher.init(Cipher.ENCRYPT_MODE, keySpec);
 			encrypted = desCipher.doFinal(password1.getBytes());
 			encPassword1 = new String(encrypted); 
 		} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
