@@ -16,7 +16,7 @@ name: Fortify AST Scan
 on:
   workflow_dispatch:
   pull_request:
-    branches: [ "main" ]
+    branches: [ "gha-v1_3-update" ]
   push:
     branches: [ "main" ]
 
