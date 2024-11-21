@@ -26,6 +26,7 @@ public class DataSeeder {
     public static final String TEST_USER2_USERNAME = "test2";
     public static final String TEST_USER2_FIRST_NAME = "Test";
     public static final String TEST_USER2_LAST_NAME = "User 2";
+    public static final String TEST_USER2_GENDER = "Male";
     public static final String TEST_USER2_PASSWORD = "0n3L0ngPa55w0rd";
     public static final String TEST_USER2_EMAIL = "test2@localhost";
     public static final String TEST_USER2_PHONE = "0123456789";
@@ -90,6 +91,7 @@ public class DataSeeder {
         user.setPassword(EncryptedPasswordUtils.encryptPassword(TEST_USER2_PASSWORD));
         user.setFirstName(TEST_USER2_FIRST_NAME);
         user.setLastName(TEST_USER2_LAST_NAME);
+        user.setGender(TEST_USER2_GENDER);
         user.setEmail(TEST_USER2_EMAIL);
         user.setPhone(TEST_USER2_PHONE);
         // no roles

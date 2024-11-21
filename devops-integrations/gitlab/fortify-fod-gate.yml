@@ -1,0 +1,25 @@
+# Integrate Fortify on Demand Static Security Gate into your Gitlab CICD pipeline
+# The following Gitlab environment variables must be defined before using this job
+#   - $_FOD_RELEASE_ID
+#   - $_FCLI_DEFAULT_FOD_USER
+#   - $_FCLI_DEFAULT_FOD_PASSWORD
+#   - $_FCLI_DEFAULT_FOD_TENANT
+#   - $_FCLI_DEFAULT_FOD_URL
+
+fortify-security-gate:
+  image: fortifydocker/fortify-ci-tools:5.5.0-jdk-17
+  stage: report
+  variables:
+    FCLI_DEFAULT_FOD_USER: $_FCLI_DEFAULT_FOD_USER
+    FCLI_DEFAULT_FOD_PASSWORD: $_FCLI_DEFAULT_FOD_PASSWORD
+    FCLI_DEFAULT_FOD_TENANT: $_FCLI_DEFAULT_FOD_TENANT
+    FCLI_DEFAULT_FOD_URL: $_FCLI_DEFAULT_FOD_URL
+    FOD_RELEASE_ID: $_FOD_RELEASE_ID
+    FOD_NOTES: "Triggered by Gitlab Pipeline IID $CI_PIPELINE_IID: $CI_PIPELINE_URL"
+  script:
+    - fcli fod session login
+
+    - fcli fod action run release-summary --release=$FOD_RELEASE_ID
+    - fcli fod action run check-policy --release=$FOD_RELEASE_ID
+    
+    - fcli fod session logout

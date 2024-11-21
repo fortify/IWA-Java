@@ -1,13 +1,17 @@
 # Integrate Debricked software composition analysis into your Gitlab CICD pipeline
-# The following Gitlab environment variables must be defined before using this job
+# The following Gitab environment variables must be defined before using this job
 #   - $DEBRICKED_TOKEN
+#   - $DEBRICKED_REPO
 
-debricked-sca:
+debricked-scan:
+  image: maven:3.9-eclipse-temurin-11
   stage: test
-  script: 
-    - curl -L https://github.com/debricked/cli/releases/download/release-v2/cli_linux_x86_64.tar.gz | tar -xz debricked
-    - ./debricked scan 
   needs: [build]
   variables:
-    DEBRICKED_TOKEN: $DEBRICKED_TOKEN
+    DEBRICKED_TOKEN: $DEBRICKED_TOKEN 
+    DEBRICKED_EXCLUSIONS: "*.lock,*.json,*fingerprints*,target/**,samples/**"
+  script: 
+    - curl -L https://github.com/debricked/cli/releases/download/release-v2/cli_linux_x86_64.tar.gz | tar -xz debricked
+    - chmod +x debricked
+    - ./debricked scan --callgraph --prefer-npm -r "${DEBRICKED_REPO}" --access-token="${DEBRICKED_TOKEN}" . 
   allow_failure: true

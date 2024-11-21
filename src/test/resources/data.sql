@@ -23,4 +23,6 @@ VALUES ('c97f4c8b-4c14-4d0c-9354-69fd7ee324da', 'bd5b9e2f-ac55-4e34-a76d-599b7e5
 INSERT INTO reviews (id, product_id, user_id, review_date, comment, rating, visible)
 VALUES ('8ab3eb7c-42f6-11ec-81d3-0242ac130003', '38400000-8cf0-11bd-b23e-10b96e4ef00d', 'bd5b9e2f-ac55-4e34-a76d-599b7e5b3308',
     CURDATE()-5, 'This is an example review of Test Product 1. It is very good', 5, 1);
+    INSERT INTO refresh_tokens (id, user_id, expiry_date)
+VALUES ('08b43d0d-2d86-4252-9782-10e73266d5c5', 'bd5b9e2f-ac55-4e34-a76d-599b7e5b3308', CURDATE() + 1);
 

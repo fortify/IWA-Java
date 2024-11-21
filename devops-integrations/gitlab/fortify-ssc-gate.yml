@@ -1,0 +1,23 @@
+# Integrate Fortify Software Security Center Gate into your Gitlab CICD pipeline
+# The following Gitlab environment variables must be defined before using this job
+#   - $_FCLI_DEFAULT_SSC_CI_TOKEN
+#   - $_FCLI_DEFAULT_SSC_URL
+#   - $_FCLI_DEFAULT_SSC_USER
+#   - $_FCLI_DEFAULT_SSC_PASSWORD
+#   - $SSC_APP_VERSION_ID
+
+fortify-security-gate:
+  image: fortifydocker/fortify-ci-tools:5.5.0-jdk-17
+  stage: report
+  variables:
+    FCLI_DEFAULT_SSC_USER: $_FCLI_DEFAULT_SSC_USER
+    FCLI_DEFAULT_SSC_PASSWORD: $_FCLI_DEFAULT_SSC_PASSWORD
+    FCLI_DEFAULT_SSC_CI_TOKEN: $_FCLI_DEFAULT_SSC_CI_TOKEN
+    FCLI_DEFAULT_SSC_URL: $_FCLI_DEFAULT_SSC_URL
+  script:
+    - fcli ssc session login
+       
+    - fcli ssc action run appversion-summary --appversion=$SSC_APP_VERSION_ID --filtersets="default"
+    - fcli ssc action run check-policy --appversion=$SSC_APP_VERSION_ID
+    
+    - fcli ssc session logout
