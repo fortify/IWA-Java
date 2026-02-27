@@ -1,14 +1,16 @@
 # Integrate Fortify ScanCentral Static AppSec Testing (SAST) into your Azure DevOps pipeline
-# The following pipeline variables must be defined before using SAST stage
+# The following pipeline variables must be defined before using SAST stage:
 #   - $SSC_URL
 #   - $SSC_TOKEN
 #   - $SC_SAST_TOKEN
+# The following pipeline variables are optional and can be defined to enable additional features:
+#   - $SSC_APPVERSION
 #   - $AVIATOR_URL
 #   - $AVIATOR_TOKEN
 #   - $AVIATOR_APP
-#   - $SC_CLIENT_VERSION
-#   - $SSC_APPVERSION
-#   - $SSC_PARENT_APPVERSION
+#   - $DEBRICKED_ACCESS_TOKEN
+# For more information on using Fortify ScanCentral SAST in Azure DevOps, see the documentation: 
+# https://fortify.github.io/fcli/v3/ci/ado/script/ast-workflow-ssc.htmltify-scancentral-sast-ci-azure-devops
 
 trigger:
 - none
@@ -45,31 +47,30 @@ stages:
           inputs:
             targetType: 'inline'
             script: |
-              npx @fortify/setup bootstrap-config
-              npx @fortify/setup env init --tools=fcli:auto,sc-client:auto
-              npx @fortify/setup env ado
+              npx @fortify/setup@v2 env init --tools=fcli:bootstrapped
+              npx @fortify/setup@v2 env ado
         - task: Bash@3
           displayName: 'Run ScanCentral SAST CI Scan'
           inputs:
             targetType: 'inline'
             script: |
               set -euo pipefail
-              echo "Running ScanCentral SAST CI Scan for AppVersion: ${SSC_APPVERSION:-}"
               fcli action run ci
           env:
             SSC_URL: $(SSC_URL)
             SSC_TOKEN: $(SSC_TOKEN)
             SC_SAST_TOKEN: $(SC_SAST_TOKEN)
-            AVIATOR_URL: $(AVIATOR_URL)
-            AVIATOR_TOKEN: $(AVIATOR_TOKEN)
-            AVIATOR_APP: $(AVIATOR_APP)
+            # Uncomment to enable Aviatior AI audit and remediation
+            #AVIATOR_URL: $(AVIATOR_URL)
+            #AVIATOR_TOKEN: $(AVIATOR_TOKEN)
+            #AVIATOR_APP: $(AVIATOR_APP)
+            # Uncomment to enable Debricked SCA scan
             #DEBRICKED_ACCESS_TOKEN: $(DEBRICKED_ACCESS_TOKEN)
-            SC_CLIENT_VERSION: $(SC_CLIENT_VERSION)
-            SSC_APPVERSION: "$(SSC_APPVERSION)"
-            SSC_PARENT_APPVERSION: "$(SSC_PARENT_APPVERSION)"
+            # SSC_APPVERSION is optional, defaults to <org>/<repo>:<branch>
+            #SSC_APPVERSION: "$(SSC_APPVERSION)"
             DO_SETUP: true
             DO_SAST_SCAN: true
-            SAST_WAIT_EXTRA_OPTS: --timeout 2h
+            #SAST_WAIT_EXTRA_OPTS: --timeout 2h
             #DO_DEBRICKED_SCAN: true
             #DO_AVIATOR_AUDIT: true
             DO_WAIT: true
@@ -78,33 +79,4 @@ stages:
             DO_JOB_SUMMARY: true
             DO_PR_COMMENT: true
             DO_EXPORT: true
-    #  container:
-    #    image: fortifydocker/fortify-ci-tools:5.4.1-jdk-17
-    #    options: "--add-host=<<SSC_FQDN_NAME>>:x.x.x.x"
-    #    env:
-    #      FCLI_DEFAULT_SC_SAST_CLIENT_AUTH_TOKEN: $(_FCLI_DEFAULT_SC_SAST_CLIENT_AUTH_TOKEN)
-    #      FCLI_DEFAULT_SSC_USER: $(_FCLI_DEFAULT_SSC_USER)
-    #      FCLI_DEFAULT_SSC_PASSWORD: $(_FCLI_DEFAULT_SSC_PASSWORD)
-    #      FCLI_DEFAULT_SSC_CI_TOKEN: $(_FCLI_DEFAULT_SSC_CI_TOKEN)
-    #      FCLI_DEFAULT_SSC_URL: $(_FCLI_DEFAULT_SSC_URL)
-    #      SSC_APP_VERSION_ID: $(_SSC_APP_VERSION_ID)
-    #      SC_SAST_SENSOR_VERSION: 24.2
-    #  steps:
-    #  - script: |
-    #      echo Setting connection with Fortify Platform
-    #      echo $FORTIFY_SSC_IP fortify.cyberxdemo.com >> /etc/hosts
-    #      #Use --insecure switch if the SSL certificate is self generated.
-    #      fcli ssc session login
-    #      fcli sc-sast session login
-    #      
-    #      scancentral package -bt mvn -o package.zip
-    #      fcli sc-sast scan start --publish-to=$SSC_APP_VERSION_ID --sensor-version=$SC_SAST_SENSOR_VERSION --package-file=package.zip --store=Id
-    #
-    #      fcli sc-sast scan wait-for ::Id:: --interval=30s
-    #      fcli ssc issue count --appversion=$SSC_APP_VERSION_ID
-    #
-    #      echo Terminating connection with Fortify Platform
-    #      fcli sc-sast session logout
-    #      fcli ssc session logout  
-    #    displayName: Scan Central Scan
-    #    continueOnError: false
+    
