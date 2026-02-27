@@ -10,7 +10,7 @@
 #   - $AVIATOR_APP
 #   - $DEBRICKED_ACCESS_TOKEN
 # For more information on using Fortify ScanCentral SAST in Azure DevOps, see the documentation: 
-# https://fortify.github.io/fcli/v3/ci/ado/script/ast-workflow-ssc.htmltify-scancentral-sast-ci-azure-devops
+# https://fortify.github.io/fcli/v3/ci/ado/script/ast-workflow-ssc.html
 
 trigger:
 - none
