@@ -1,39 +1,80 @@
-# Integrate Fortify on Demand Static AppSec Testing (SAST) into your Azure DevOps  pipeline
-# The following service connection must be establish before using this job
-#   - FoD_AMS
-#
-# The following task parameter must be defined 
-#   - ReleaseId
+# Integrate Fortify on Demand Static AppSec Testing (SAST) into your Azure DevOps pipeline
+# The following pipeline variables must be defined before using SAST stage:
+#   - $FOD_URL
+#   - $FOD_CLIENT_ID
+#   - $FOD_CLIENT_SECRET
+# The following pipeline variables are optional and can be defined to enable additional features:
+#   - $FOD_RELEASE
+#   - $FOD_PARENT_RELEASE
+#   - $FOD_DEFAULT_OWNER
+# For more information on using Fortify on Demand SAST in Azure DevOps, see the documentation: 
+# https://fortify.github.io/fcli/v3/ci/ado/script/ast-workflow-fod.html
+
 
 trigger:
-- main
-
-pool:
-  vmImage: ubuntu-latest
-
-steps:
-- task: Maven@3
-  inputs:
-    mavenPomFile: 'pom.xml'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.11'
-    mavenVersionOption: 'Default'
-    mavenOptions: '-Xmx3072m'
-    mavenAuthenticateFeed: false
-    effectivePomSkip: false
-    sonarQubeRunAnalysis: false
-- task: FortifyOnDemandStatic@8
-  inputs:
-    FortifyProjects: '$(Build.Repository.LocalPath)'
-    FodConnection: 'FoD_AMS'    # create Azure DevOps Service connection with name FoD_AMS
-    ReleaseOptions: '0'
-    ReleaseId: 00000            # update FoD RELEASE ID
-    EntitlementSelection: '1'
-    EntitlementPreference: '2'
-    OverrideScanSettings: '2'
-    InProgressScanActionType: '0'
-    RemediationScanPreference: '2'
-    BuildType: 'mvn'
-    PolicyFailAction: '0'
+- none
+stages:
+- stage: Build
+  jobs:
+    - job: Build
+      displayName: Building IWA Project
+      pool:
+        vmImage: ubuntu-latest
+      steps:
+      - task: Maven@3
+        inputs:
+          mavenPomFile: 'pom.xml'
+          mavenOptions: '-Xmx3072m'
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: '1.17'
+          jdkArchitectureOption: 'x64'
+          publishJUnitResults: true
+          testResultsFiles: '**/surefire-reports/TEST-*.xml'
+          goals: 'package'
+    - job: SAST
+      displayName: Fortify SAST
+      dependsOn:
+       - Build
+      pool:
+       vmImage: 'ubuntu-latest'
+      steps:
+        - checkout: self
+          persistCredentials: "true"
+          clean: "true"
+        - task: Bash@3
+          displayName: 'Install Fortify CLI via @fortify/setup'
+          inputs:
+            targetType: 'inline'
+            script: |
+              npx @fortify/setup@v2 env init --tools=fcli:bootstrapped
+              npx @fortify/setup@v2 env ado
+        - task: Bash@3
+          displayName: 'Run Fortify on Demand SAST CI Scan'
+          inputs:
+            targetType: 'inline'
+            script: |
+              set -euo pipefail
+              fcli action run ci
+          env:
+            FOD_URL: $(FOD_URL)
+            FOD_CLIENT_ID: $(FOD_CLIENT_ID)
+            FOD_CLIENT_SECRET: $(FOD_CLIENT_SECRET)
+            # FOD_RELEASE is optional, defaults to <org>/<repo>:<branch>
+            #FOD_RELEASE: "$(FOD_RELEASE)"
+            # Uncomment the following line to copy from an existing release
+            #COPY_FROM_RELEASE: "$(FOD_PARENT_RELEASE)"
+            # Uncomment to set the default Static Assessment type when a new release is created
+            #SAST_ASSESSMENT_TYPE: "Static Assessment"
+            # Example of setting extra options for when creating a new release
+            #SETUP_EXTRA_OPTS: '--sdlc-status Development --app-owner "$(FOD_DEFAULT_OWNER)"'
+            DO_SETUP: true
+            DO_SAST_SCAN: true
+            # Uncomment to enable Aviator AI audit and remedation
+            #DO_AVIATOR_AUDIT: true
+            #SAST_WAIT_EXTRA_OPTS: --timeout 2h
+            DO_SCA_SCAN: true
+            DO_WAIT: true
+            DO_POLICY_CHECK: true
+            DO_JOB_SUMMARY: true
+            DO_PR_COMMENT: true
+            DO_EXPORT: true
